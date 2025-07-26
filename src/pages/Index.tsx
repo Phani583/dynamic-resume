@@ -27,7 +27,10 @@ import {
   Award,
   Palette,
   FileText,
-  Star
+  Star,
+  Layout,
+  Settings,
+  Circle
 } from 'lucide-react';
 
 // Types
@@ -72,8 +75,21 @@ interface ResumeTheme {
   description: string;
   primaryColor: string;
   secondaryColor: string;
+  accentColor: string;
   fontFamily: string;
-  layout: 'traditional' | 'modern' | 'creative' | 'minimal' | 'sidebar';
+  layout: 'traditional' | 'modern' | 'creative' | 'minimal' | 'sidebar' | 'two-column' | 'executive' | 'academic';
+  headerStyle: 'centered' | 'left' | 'right' | 'banner' | 'sidebar';
+  sectionStyle: 'standard' | 'bordered' | 'filled' | 'minimal' | 'cards';
+  spacing: 'compact' | 'normal' | 'spacious';
+  typography: 'professional' | 'modern' | 'elegant' | 'bold' | 'minimal';
+}
+
+interface CustomColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+  text: string;
+  background: string;
 }
 
 // Resume Themes
@@ -82,145 +98,225 @@ const resumeThemes: ResumeTheme[] = [
     id: 'classic-professional',
     name: 'Classic Professional',
     description: 'Traditional layout with elegant typography',
-    primaryColor: 'theme-blue',
-    secondaryColor: 'muted',
+    primaryColor: '#2563eb',
+    secondaryColor: '#64748b',
+    accentColor: '#1e40af',
     fontFamily: 'font-inter',
-    layout: 'traditional'
+    layout: 'traditional',
+    headerStyle: 'centered',
+    sectionStyle: 'standard',
+    spacing: 'normal',
+    typography: 'professional'
   },
   {
     id: 'modern-minimal',
     name: 'Modern Minimal',
     description: 'Clean design with lots of white space',
-    primaryColor: 'foreground',
-    secondaryColor: 'muted',
+    primaryColor: '#0f172a',
+    secondaryColor: '#64748b',
+    accentColor: '#334155',
     fontFamily: 'font-source',
-    layout: 'minimal'
+    layout: 'minimal',
+    headerStyle: 'left',
+    sectionStyle: 'minimal',
+    spacing: 'spacious',
+    typography: 'minimal'
   },
   {
     id: 'creative-bold',
     name: 'Creative Bold',
     description: 'Vibrant colors and dynamic layout',
-    primaryColor: 'theme-purple',
-    secondaryColor: 'theme-pink',
+    primaryColor: '#7c3aed',
+    secondaryColor: '#ec4899',
+    accentColor: '#8b5cf6',
     fontFamily: 'font-open',
-    layout: 'creative'
+    layout: 'creative',
+    headerStyle: 'banner',
+    sectionStyle: 'filled',
+    spacing: 'normal',
+    typography: 'bold'
   },
   {
     id: 'executive-dark',
     name: 'Executive',
     description: 'Sophisticated dark accents for leadership roles',
-    primaryColor: 'muted-dark',
-    secondaryColor: 'muted',
+    primaryColor: '#1f2937',
+    secondaryColor: '#6b7280',
+    accentColor: '#374151',
     fontFamily: 'font-playfair',
-    layout: 'traditional'
+    layout: 'executive',
+    headerStyle: 'centered',
+    sectionStyle: 'bordered',
+    spacing: 'normal',
+    typography: 'elegant'
   },
   {
     id: 'tech-focus',
     name: 'Tech Focus',
     description: 'Modern design perfect for developers',
-    primaryColor: 'theme-teal',
-    secondaryColor: 'theme-blue',
+    primaryColor: '#0d9488',
+    secondaryColor: '#2563eb',
+    accentColor: '#14b8a6',
     fontFamily: 'font-roboto',
-    layout: 'modern'
+    layout: 'modern',
+    headerStyle: 'left',
+    sectionStyle: 'bordered',
+    spacing: 'normal',
+    typography: 'modern'
   },
   {
     id: 'academic-scholar',
     name: 'Academic Scholar',
     description: 'Education-focused with clean sections',
-    primaryColor: 'theme-indigo',
-    secondaryColor: 'muted',
+    primaryColor: '#4f46e5',
+    secondaryColor: '#6b7280',
+    accentColor: '#6366f1',
     fontFamily: 'font-source',
-    layout: 'traditional'
+    layout: 'academic',
+    headerStyle: 'centered',
+    sectionStyle: 'standard',
+    spacing: 'spacious',
+    typography: 'professional'
   },
   {
     id: 'startup-style',
     name: 'Startup Style',
     description: 'Trendy and innovative design',
-    primaryColor: 'theme-orange',
-    secondaryColor: 'theme-red',
+    primaryColor: '#f97316',
+    secondaryColor: '#dc2626',
+    accentColor: '#ea580c',
     fontFamily: 'font-inter',
-    layout: 'creative'
+    layout: 'creative',
+    headerStyle: 'banner',
+    sectionStyle: 'cards',
+    spacing: 'compact',
+    typography: 'bold'
   },
   {
     id: 'corporate-blue',
     name: 'Corporate Blue',
     description: 'Business-oriented professional layout',
-    primaryColor: 'primary',
-    secondaryColor: 'primary-light',
+    primaryColor: '#2563eb',
+    secondaryColor: '#3b82f6',
+    accentColor: '#1d4ed8',
     fontFamily: 'font-inter',
-    layout: 'traditional'
+    layout: 'traditional',
+    headerStyle: 'centered',
+    sectionStyle: 'bordered',
+    spacing: 'normal',
+    typography: 'professional'
   },
   {
     id: 'designer-portfolio',
     name: 'Designer Portfolio',
     description: 'Creative layout showcasing design skills',
-    primaryColor: 'theme-pink',
-    secondaryColor: 'theme-purple',
+    primaryColor: '#ec4899',
+    secondaryColor: '#7c3aed',
+    accentColor: '#db2777',
     fontFamily: 'font-playfair',
-    layout: 'sidebar'
+    layout: 'sidebar',
+    headerStyle: 'sidebar',
+    sectionStyle: 'filled',
+    spacing: 'normal',
+    typography: 'elegant'
   },
   {
     id: 'developer-focus',
     name: 'Developer Focus',
     description: 'Code-oriented with technical emphasis',
-    primaryColor: 'theme-green',
-    secondaryColor: 'muted',
+    primaryColor: '#16a34a',
+    secondaryColor: '#6b7280',
+    accentColor: '#15803d',
     fontFamily: 'font-roboto',
-    layout: 'modern'
+    layout: 'two-column',
+    headerStyle: 'left',
+    sectionStyle: 'minimal',
+    spacing: 'compact',
+    typography: 'modern'
   },
   {
     id: 'sales-professional',
     name: 'Sales Professional',
     description: 'Results-focused design',
-    primaryColor: 'theme-red',
-    secondaryColor: 'theme-orange',
+    primaryColor: '#dc2626',
+    secondaryColor: '#f97316',
+    accentColor: '#b91c1c',
     fontFamily: 'font-open',
-    layout: 'modern'
+    layout: 'modern',
+    headerStyle: 'banner',
+    sectionStyle: 'bordered',
+    spacing: 'normal',
+    typography: 'bold'
   },
   {
     id: 'healthcare-pro',
     name: 'Healthcare Professional',
     description: 'Clean, trustworthy medical field design',
-    primaryColor: 'theme-teal',
-    secondaryColor: 'success',
+    primaryColor: '#0d9488',
+    secondaryColor: '#10b981',
+    accentColor: '#059669',
     fontFamily: 'font-source',
-    layout: 'traditional'
+    layout: 'traditional',
+    headerStyle: 'centered',
+    sectionStyle: 'standard',
+    spacing: 'spacious',
+    typography: 'professional'
   },
   {
     id: 'education-sector',
     name: 'Education Sector',
     description: 'Teaching-focused professional layout',
-    primaryColor: 'theme-indigo',
-    secondaryColor: 'theme-blue',
+    primaryColor: '#4f46e5',
+    secondaryColor: '#2563eb',
+    accentColor: '#4338ca',
     fontFamily: 'font-inter',
-    layout: 'traditional'
+    layout: 'academic',
+    headerStyle: 'centered',
+    sectionStyle: 'standard',
+    spacing: 'normal',
+    typography: 'professional'
   },
   {
     id: 'finance-professional',
     name: 'Finance Professional',
     description: 'Conservative and trustworthy design',
-    primaryColor: 'muted-dark',
-    secondaryColor: 'primary',
+    primaryColor: '#374151',
+    secondaryColor: '#2563eb',
+    accentColor: '#1f2937',
     fontFamily: 'font-playfair',
-    layout: 'traditional'
+    layout: 'executive',
+    headerStyle: 'centered',
+    sectionStyle: 'bordered',
+    spacing: 'normal',
+    typography: 'elegant'
   },
   {
     id: 'creative-arts',
     name: 'Creative Arts',
     description: 'Artistic layout for creative professionals',
-    primaryColor: 'theme-purple',
-    secondaryColor: 'theme-pink',
+    primaryColor: '#7c3aed',
+    secondaryColor: '#ec4899',
+    accentColor: '#6d28d9',
     fontFamily: 'font-playfair',
-    layout: 'creative'
+    layout: 'creative',
+    headerStyle: 'banner',
+    sectionStyle: 'filled',
+    spacing: 'spacious',
+    typography: 'elegant'
   },
   {
     id: 'consultant-expert',
     name: 'Consultant Expert',
     description: 'Professional consulting layout',
-    primaryColor: 'theme-blue',
-    secondaryColor: 'theme-teal',
+    primaryColor: '#2563eb',
+    secondaryColor: '#0d9488',
+    accentColor: '#1d4ed8',
     fontFamily: 'font-inter',
-    layout: 'sidebar'
+    layout: 'sidebar',
+    headerStyle: 'sidebar',
+    sectionStyle: 'bordered',
+    spacing: 'normal',
+    typography: 'professional'
   }
 ];
 
@@ -233,6 +329,15 @@ const Index = () => {
   const [selectedTheme, setSelectedTheme] = useState<string>('classic-professional');
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [newSkill, setNewSkill] = useState('');
+  const [customColors, setCustomColors] = useState<CustomColors>({
+    primary: '#2563eb',
+    secondary: '#64748b',
+    accent: '#1e40af',
+    text: '#111827',
+    background: '#ffffff'
+  });
+  const [useCustomColors, setUseCustomColors] = useState(false);
+  const [selectedLayout, setSelectedLayout] = useState<string>('traditional');
 
   const [resumeData, setResumeData] = useState<ResumeData>({
     personalInfo: {
@@ -255,6 +360,14 @@ const Index = () => {
 
   // Get current theme
   const currentTheme = resumeThemes.find(theme => theme.id === selectedTheme) || resumeThemes[0];
+  
+  // Apply custom colors if enabled
+  const appliedTheme = useCustomColors ? {
+    ...currentTheme,
+    primaryColor: customColors.primary,
+    secondaryColor: customColors.secondary,
+    accentColor: customColors.accent
+  } : currentTheme;
 
   // Handlers
   const updatePersonalInfo = (field: string, value: string) => {
@@ -438,25 +551,144 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Palette className="h-5 w-5" />
-                  Choose Theme
+                  Design & Theme
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <Select value={selectedTheme} onValueChange={setSelectedTheme}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {resumeThemes.map(theme => (
-                      <SelectItem key={theme.id} value={theme.id}>
-                        <div>
-                          <div className="font-medium">{theme.name}</div>
-                          <div className="text-xs text-muted-foreground">{theme.description}</div>
+              <CardContent className="space-y-6">
+                <div>
+                  <Label className="text-sm font-medium mb-3 block">Resume Theme</Label>
+                  <Select value={selectedTheme} onValueChange={setSelectedTheme}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {resumeThemes.map(theme => (
+                        <SelectItem key={theme.id} value={theme.id}>
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-4 h-4 rounded-full border-2"
+                              style={{ backgroundColor: theme.primaryColor, borderColor: theme.secondaryColor }}
+                            />
+                            <div>
+                              <div className="font-medium">{theme.name}</div>
+                              <div className="text-xs text-muted-foreground">{theme.description}</div>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Separator />
+
+                {/* Layout Options */}
+                <div>
+                  <Label className="text-sm font-medium mb-3 block">Layout Style</Label>
+                  <Select value={selectedLayout} onValueChange={setSelectedLayout}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="traditional">Traditional</SelectItem>
+                      <SelectItem value="modern">Modern</SelectItem>
+                      <SelectItem value="creative">Creative</SelectItem>
+                      <SelectItem value="minimal">Minimal</SelectItem>
+                      <SelectItem value="sidebar">Sidebar</SelectItem>
+                      <SelectItem value="two-column">Two Column</SelectItem>
+                      <SelectItem value="executive">Executive</SelectItem>
+                      <SelectItem value="academic">Academic</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Separator />
+
+                {/* Color Customization */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="text-sm font-medium">Custom Colors</Label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="useCustomColors"
+                        checked={useCustomColors}
+                        onChange={(e) => setUseCustomColors(e.target.checked)}
+                        className="rounded"
+                      />
+                      <Label htmlFor="useCustomColors" className="text-sm">Enable</Label>
+                    </div>
+                  </div>
+                  
+                  {useCustomColors && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-xs">Primary</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={customColors.primary}
+                            onChange={(e) => setCustomColors(prev => ({...prev, primary: e.target.value}))}
+                            className="w-8 h-8 rounded border"
+                          />
+                          <Input
+                            value={customColors.primary}
+                            onChange={(e) => setCustomColors(prev => ({...prev, primary: e.target.value}))}
+                            className="text-xs"
+                          />
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Secondary</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={customColors.secondary}
+                            onChange={(e) => setCustomColors(prev => ({...prev, secondary: e.target.value}))}
+                            className="w-8 h-8 rounded border"
+                          />
+                          <Input
+                            value={customColors.secondary}
+                            onChange={(e) => setCustomColors(prev => ({...prev, secondary: e.target.value}))}
+                            className="text-xs"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Accent</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={customColors.accent}
+                            onChange={(e) => setCustomColors(prev => ({...prev, accent: e.target.value}))}
+                            className="w-8 h-8 rounded border"
+                          />
+                          <Input
+                            value={customColors.accent}
+                            onChange={(e) => setCustomColors(prev => ({...prev, accent: e.target.value}))}
+                            className="text-xs"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Text</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={customColors.text}
+                            onChange={(e) => setCustomColors(prev => ({...prev, text: e.target.value}))}
+                            className="w-8 h-8 rounded border"
+                          />
+                          <Input
+                            value={customColors.text}
+                            onChange={(e) => setCustomColors(prev => ({...prev, text: e.target.value}))}
+                            className="text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -844,9 +1076,17 @@ const Index = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-white border border-border rounded-lg p-8 shadow-medium overflow-hidden">
+                <div 
+                  className="border border-border rounded-lg p-8 shadow-medium overflow-hidden"
+                  style={{ backgroundColor: useCustomColors ? customColors.background : '#ffffff' }}
+                >
                   <div ref={printRef}>
-                    <ResumePreview data={resumeData} theme={currentTheme} />
+                    <ResumePreview 
+                      data={resumeData} 
+                      theme={appliedTheme} 
+                      layout={selectedLayout}
+                      customColors={useCustomColors ? customColors : undefined}
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -859,14 +1099,40 @@ const Index = () => {
 };
 
 // Resume Preview Component
-const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ data, theme }) => {
-  const themeClasses = {
-    container: `${theme.fontFamily} text-gray-900`,
-    header: `text-${theme.primaryColor}`,
-    section: 'mb-6',
-    sectionTitle: `text-lg font-semibold text-${theme.primaryColor} border-b border-${theme.primaryColor} pb-1 mb-3`,
-    text: 'text-gray-700',
-    accent: `text-${theme.secondaryColor}`
+const ResumePreview: React.FC<{ 
+  data: ResumeData; 
+  theme: ResumeTheme; 
+  layout?: string;
+  customColors?: CustomColors;
+}> = ({ data, theme, layout = 'traditional', customColors }) => {
+  const getSpacing = (spacing: string) => {
+    switch (spacing) {
+      case 'compact': return { section: 'mb-4', title: 'mb-2', content: 'mb-2' };
+      case 'spacious': return { section: 'mb-8', title: 'mb-4', content: 'mb-4' };
+      default: return { section: 'mb-6', title: 'mb-3', content: 'mb-3' };
+    }
+  };
+
+  const spacing = getSpacing(theme.spacing);
+  
+  const getTypographyClasses = (typography: string) => {
+    switch (typography) {
+      case 'modern': return { name: 'text-3xl font-light', section: 'text-lg font-medium', body: 'text-sm font-light' };
+      case 'elegant': return { name: 'text-3xl font-serif', section: 'text-lg font-serif', body: 'text-sm' };
+      case 'bold': return { name: 'text-3xl font-black', section: 'text-lg font-bold', body: 'text-sm font-medium' };
+      case 'minimal': return { name: 'text-2xl font-thin', section: 'text-base font-normal', body: 'text-xs' };
+      default: return { name: 'text-3xl font-bold', section: 'text-lg font-semibold', body: 'text-sm' };
+    }
+  };
+
+  const typography = getTypographyClasses(theme.typography);
+
+  const colors = customColors || {
+    primary: theme.primaryColor,
+    secondary: theme.secondaryColor,
+    accent: theme.accentColor,
+    text: '#111827',
+    background: '#ffffff'
   };
 
   const formatDate = (dateStr: string) => {
@@ -875,8 +1141,29 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
   };
 
+  const renderLayout = () => {
+    const layoutStyle = layout || theme.layout;
+    
+    switch (layoutStyle) {
+      case 'sidebar':
+        return renderSidebarLayout();
+      case 'two-column':
+        return renderTwoColumnLayout();
+      case 'creative':
+        return renderCreativeLayout();
+      case 'minimal':
+        return renderMinimalLayout();
+      case 'executive':
+        return renderExecutiveLayout();
+      case 'academic':
+        return renderAcademicLayout();
+      default:
+        return renderTraditionalLayout();
+    }
+  };
+
   const renderTraditionalLayout = () => (
-    <div className={themeClasses.container}>
+    <div className={`${theme.fontFamily} text-gray-900`} style={{ color: colors.text }}>
       {/* Header */}
       <div className="text-center mb-8">
         {data.personalInfo.profileImage && (
@@ -888,10 +1175,10 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
             />
           </div>
         )}
-        <h1 className={`text-3xl font-bold ${themeClasses.header} mb-2`}>
+        <h1 className={`${typography.name} mb-2`} style={{ color: colors.primary }}>
           {data.personalInfo.fullName || 'Your Name'}
         </h1>
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
+        <div className="flex flex-wrap justify-center gap-4 text-sm" style={{ color: colors.secondary }}>
           {data.personalInfo.email && (
             <div className="flex items-center gap-1">
               <Mail className="h-4 w-4" />
@@ -913,7 +1200,7 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
         </div>
         
         {/* Public Links */}
-        <div className="flex flex-wrap justify-center gap-4 mt-2 text-sm">
+        <div className="flex flex-wrap justify-center gap-4 mt-2 text-sm" style={{ color: colors.secondary }}>
           {data.publicLinks.github && (
             <div className="flex items-center gap-1">
               <Github className="h-4 w-4" />
@@ -937,9 +1224,11 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
 
       {/* Summary */}
       {data.personalInfo.summary && (
-        <div className={themeClasses.section}>
-          <h2 className={themeClasses.sectionTitle}>Professional Summary</h2>
-          <p className={`${themeClasses.text} leading-relaxed`}>
+        <div className={spacing.section}>
+          <h2 className={`${typography.section} border-b pb-1 ${spacing.title}`} style={{ color: colors.primary, borderColor: colors.primary }}>
+            Professional Summary
+          </h2>
+          <p className={`${typography.body} leading-relaxed`} style={{ color: colors.text }}>
             {data.personalInfo.summary}
           </p>
         </div>
@@ -947,23 +1236,25 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
 
       {/* Experience */}
       {data.experience.length > 0 && (
-        <div className={themeClasses.section}>
-          <h2 className={themeClasses.sectionTitle}>Work Experience</h2>
+        <div className={spacing.section}>
+          <h2 className={`${typography.section} border-b pb-1 ${spacing.title}`} style={{ color: colors.primary, borderColor: colors.primary }}>
+            Work Experience
+          </h2>
           <div className="space-y-4">
             {data.experience.map((exp) => (
               <div key={exp.id}>
                 <div className="flex justify-between items-start mb-1">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{exp.jobTitle}</h3>
-                    <p className={`${themeClasses.accent} font-medium`}>{exp.company}</p>
+                    <h3 className="font-semibold" style={{ color: colors.text }}>{exp.jobTitle}</h3>
+                    <p className="font-medium" style={{ color: colors.secondary }}>{exp.company}</p>
                   </div>
-                  <div className="text-sm text-gray-600 flex items-center gap-1">
+                  <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
                     <Calendar className="h-3 w-3" />
                     {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
                   </div>
                 </div>
                 {exp.description && (
-                  <p className={`${themeClasses.text} text-sm leading-relaxed`}>
+                  <p className={`${typography.body} leading-relaxed`} style={{ color: colors.text }}>
                     {exp.description}
                   </p>
                 )}
@@ -975,16 +1266,18 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
 
       {/* Education */}
       {data.education.length > 0 && (
-        <div className={themeClasses.section}>
-          <h2 className={themeClasses.sectionTitle}>Education</h2>
+        <div className={spacing.section}>
+          <h2 className={`${typography.section} border-b pb-1 ${spacing.title}`} style={{ color: colors.primary, borderColor: colors.primary }}>
+            Education
+          </h2>
           <div className="space-y-3">
             {data.education.map((edu) => (
               <div key={edu.id} className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-semibold text-gray-900">{edu.degree}</h3>
-                  <p className={themeClasses.accent}>{edu.school}</p>
+                  <h3 className="font-semibold" style={{ color: colors.text }}>{edu.degree}</h3>
+                  <p style={{ color: colors.secondary }}>{edu.school}</p>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm" style={{ color: colors.secondary }}>
                   {edu.startYear} - {edu.current ? 'Present' : edu.endYear}
                 </div>
               </div>
@@ -995,13 +1288,19 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
 
       {/* Skills */}
       {data.skills.length > 0 && (
-        <div className={themeClasses.section}>
-          <h2 className={themeClasses.sectionTitle}>Skills</h2>
+        <div className={spacing.section}>
+          <h2 className={`${typography.section} border-b pb-1 ${spacing.title}`} style={{ color: colors.primary, borderColor: colors.primary }}>
+            Skills
+          </h2>
           <div className="flex flex-wrap gap-2">
             {data.skills.map((skill, index) => (
               <span
                 key={index}
-                className={`px-3 py-1 bg-${theme.primaryColor}/10 text-${theme.primaryColor} rounded-full text-sm font-medium`}
+                className="px-3 py-1 rounded-full text-sm font-medium"
+                style={{ 
+                  backgroundColor: `${colors.primary}15`, 
+                  color: colors.primary 
+                }}
               >
                 {skill}
               </span>
@@ -1013,9 +1312,9 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
   );
 
   const renderSidebarLayout = () => (
-    <div className={`${themeClasses.container} grid grid-cols-3 gap-6 min-h-full`}>
+    <div className={`${theme.fontFamily} grid grid-cols-3 gap-6 min-h-full`}>
       {/* Sidebar */}
-      <div className={`bg-${theme.primaryColor}/5 p-6 space-y-6`}>
+      <div className="p-6 space-y-6 rounded-lg" style={{ backgroundColor: `${colors.primary}08` }}>
         {/* Profile */}
         <div className="text-center">
           {data.personalInfo.profileImage && (
@@ -1027,14 +1326,14 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
               />
             </div>
           )}
-          <h1 className={`text-xl font-bold ${themeClasses.header} mb-2`}>
+          <h1 className={`text-xl font-bold mb-2`} style={{ color: colors.primary }}>
             {data.personalInfo.fullName || 'Your Name'}
           </h1>
         </div>
 
         {/* Contact */}
         <div>
-          <h3 className={`font-semibold ${themeClasses.header} mb-3`}>Contact</h3>
+          <h3 className="font-semibold mb-3" style={{ color: colors.primary }}>Contact</h3>
           <div className="space-y-2 text-sm">
             {data.personalInfo.email && (
               <div className="flex items-center gap-2">
@@ -1060,7 +1359,7 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
         {/* Links */}
         {(data.publicLinks.github || data.publicLinks.linkedin || data.publicLinks.portfolio) && (
           <div>
-            <h3 className={`font-semibold ${themeClasses.header} mb-3`}>Links</h3>
+            <h3 className="font-semibold mb-3" style={{ color: colors.primary }}>Links</h3>
             <div className="space-y-2 text-sm">
               {data.publicLinks.github && (
                 <div className="flex items-center gap-2">
@@ -1087,10 +1386,14 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
         {/* Skills */}
         {data.skills.length > 0 && (
           <div>
-            <h3 className={`font-semibold ${themeClasses.header} mb-3`}>Skills</h3>
+            <h3 className="font-semibold mb-3" style={{ color: colors.primary }}>Skills</h3>
             <div className="space-y-1">
               {data.skills.map((skill, index) => (
-                <div key={index} className={`text-sm px-2 py-1 bg-${theme.primaryColor}/10 rounded`}>
+                <div 
+                  key={index} 
+                  className="text-sm px-2 py-1 rounded"
+                  style={{ backgroundColor: `${colors.primary}15` }}
+                >
                   {skill}
                 </div>
               ))}
@@ -1104,8 +1407,8 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
         {/* Summary */}
         {data.personalInfo.summary && (
           <div>
-            <h2 className={`text-lg font-bold ${themeClasses.header} mb-3`}>Summary</h2>
-            <p className={`${themeClasses.text} leading-relaxed text-sm`}>
+            <h2 className="text-lg font-bold mb-3" style={{ color: colors.primary }}>Summary</h2>
+            <p className="leading-relaxed text-sm" style={{ color: colors.text }}>
               {data.personalInfo.summary}
             </p>
           </div>
@@ -1114,21 +1417,22 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
         {/* Experience */}
         {data.experience.length > 0 && (
           <div>
-            <h2 className={`text-lg font-bold ${themeClasses.header} mb-3`}>Experience</h2>
+            <h2 className="text-lg font-bold mb-3" style={{ color: colors.primary }}>Experience</h2>
             <div className="space-y-4">
               {data.experience.map((exp) => (
                 <div key={exp.id}>
                   <div className="flex justify-between items-start mb-1">
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">{exp.jobTitle}</h3>
-                      <p className={`${themeClasses.accent} text-sm`}>{exp.company}</p>
+                      <h3 className="font-semibold" style={{ color: colors.text }}>{exp.jobTitle}</h3>
+                      <p className="font-medium" style={{ color: colors.secondary }}>{exp.company}</p>
                     </div>
-                    <div className="text-xs text-gray-600">
+                    <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
+                      <Calendar className="h-3 w-3" />
                       {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
                     </div>
                   </div>
                   {exp.description && (
-                    <p className={`${themeClasses.text} text-xs leading-relaxed`}>
+                    <p className="text-sm leading-relaxed" style={{ color: colors.text }}>
                       {exp.description}
                     </p>
                   )}
@@ -1141,15 +1445,15 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
         {/* Education */}
         {data.education.length > 0 && (
           <div>
-            <h2 className={`text-lg font-bold ${themeClasses.header} mb-3`}>Education</h2>
+            <h2 className="text-lg font-bold mb-3" style={{ color: colors.primary }}>Education</h2>
             <div className="space-y-3">
               {data.education.map((edu) => (
                 <div key={edu.id} className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">{edu.degree}</h3>
-                    <p className={`${themeClasses.accent} text-sm`}>{edu.school}</p>
+                    <h3 className="font-semibold" style={{ color: colors.text }}>{edu.degree}</h3>
+                    <p style={{ color: colors.secondary }}>{edu.school}</p>
                   </div>
-                  <div className="text-xs text-gray-600">
+                  <div className="text-sm" style={{ color: colors.secondary }}>
                     {edu.startYear} - {edu.current ? 'Present' : edu.endYear}
                   </div>
                 </div>
@@ -1161,159 +1465,18 @@ const ResumePreview: React.FC<{ data: ResumeData; theme: ResumeTheme }> = ({ dat
     </div>
   );
 
-  const renderModernLayout = () => (
-    <div className={themeClasses.container}>
-      {/* Header */}
-      <div className="flex items-start gap-6 mb-8">
-        {data.personalInfo.profileImage && (
-          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-            <img 
-              src={data.personalInfo.profileImage} 
-              alt="Profile" 
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-        <div className="flex-1">
-          <h1 className={`text-2xl font-bold ${themeClasses.header} mb-2`}>
-            {data.personalInfo.fullName || 'Your Name'}
-          </h1>
-          <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
-            {data.personalInfo.email && (
-              <div className="flex items-center gap-1">
-                <Mail className="h-4 w-4" />
-                {data.personalInfo.email}
-              </div>
-            )}
-            {data.personalInfo.phone && (
-              <div className="flex items-center gap-1">
-                <Phone className="h-4 w-4" />
-                {data.personalInfo.phone}
-              </div>
-            )}
-            {data.personalInfo.location && (
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                {data.personalInfo.location}
-              </div>
-            )}
-          </div>
-          
-          {/* Public Links */}
-          <div className="flex flex-wrap gap-3 text-xs">
-            {data.publicLinks.github && (
-              <div className="flex items-center gap-1">
-                <Github className="h-3 w-3" />
-                <span>{data.publicLinks.github.replace('https://', '')}</span>
-              </div>
-            )}
-            {data.publicLinks.linkedin && (
-              <div className="flex items-center gap-1">
-                <Linkedin className="h-3 w-3" />
-                <span>{data.publicLinks.linkedin.replace('https://', '')}</span>
-              </div>
-            )}
-            {data.publicLinks.portfolio && (
-              <div className="flex items-center gap-1">
-                <Globe className="h-3 w-3" />
-                <span>{data.publicLinks.portfolio.replace('https://', '')}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+  // Placeholder for other layouts - implement similar patterns
+  const renderTwoColumnLayout = () => renderTraditionalLayout();
+  const renderCreativeLayout = () => renderTraditionalLayout();
+  const renderMinimalLayout = () => renderTraditionalLayout();
+  const renderExecutiveLayout = () => renderTraditionalLayout();
+  const renderAcademicLayout = () => renderTraditionalLayout();
 
-      {/* Content in 2 columns */}
-      <div className="grid grid-cols-3 gap-8">
-        <div className="col-span-2 space-y-6">
-          {/* Summary */}
-          {data.personalInfo.summary && (
-            <div>
-              <h2 className={`text-lg font-semibold ${themeClasses.header} mb-3`}>Summary</h2>
-              <p className={`${themeClasses.text} leading-relaxed`}>
-                {data.personalInfo.summary}
-              </p>
-            </div>
-          )}
-
-          {/* Experience */}
-          {data.experience.length > 0 && (
-            <div>
-              <h2 className={`text-lg font-semibold ${themeClasses.header} mb-4`}>Experience</h2>
-              <div className="space-y-4">
-                {data.experience.map((exp) => (
-                  <div key={exp.id} className="border-l-2 border-gray-200 pl-4">
-                    <div className="flex justify-between items-start mb-1">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{exp.jobTitle}</h3>
-                        <p className={themeClasses.accent}>{exp.company}</p>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
-                      </div>
-                    </div>
-                    {exp.description && (
-                      <p className={`${themeClasses.text} text-sm leading-relaxed`}>
-                        {exp.description}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-6">
-          {/* Education */}
-          {data.education.length > 0 && (
-            <div>
-              <h2 className={`text-lg font-semibold ${themeClasses.header} mb-4`}>Education</h2>
-              <div className="space-y-3">
-                {data.education.map((edu) => (
-                  <div key={edu.id}>
-                    <h3 className="font-semibold text-gray-900 text-sm">{edu.degree}</h3>
-                    <p className={`${themeClasses.accent} text-sm`}>{edu.school}</p>
-                    <p className="text-xs text-gray-600">
-                      {edu.startYear} - {edu.current ? 'Present' : edu.endYear}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Skills */}
-          {data.skills.length > 0 && (
-            <div>
-              <h2 className={`text-lg font-semibold ${themeClasses.header} mb-4`}>Skills</h2>
-              <div className="space-y-1">
-                {data.skills.map((skill, index) => (
-                  <div key={index} className={`text-sm px-2 py-1 bg-${theme.primaryColor}/10 rounded`}>
-                    {skill}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+  return (
+    <div className="w-full h-full min-h-[800px] text-gray-900">
+      {renderLayout()}
     </div>
   );
-
-  // Render based on theme layout
-  switch (theme.layout) {
-    case 'sidebar':
-      return renderSidebarLayout();
-    case 'modern':
-      return renderModernLayout();
-    case 'creative':
-      return renderModernLayout(); // Use modern layout for creative themes
-    case 'minimal':
-      return renderTraditionalLayout();
-    default:
-      return renderTraditionalLayout();
-  }
 };
 
 export default Index;
