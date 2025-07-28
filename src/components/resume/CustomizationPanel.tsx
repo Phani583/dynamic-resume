@@ -12,8 +12,7 @@ import {
   SECTION_ICONS, 
   BULLET_STYLES, 
   DIVIDER_STYLES, 
-  RESUME_THEMES,
-  RESUME_TEMPLATES, 
+  RESUME_THEMES, 
   LAYOUT_OPTIONS 
 } from './constants';
 import { CustomizationOptions, ResumeTheme, SectionCustomization } from './types';
@@ -75,12 +74,8 @@ const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="overflow-y-auto h-[calc(100%-80px)]">
-        <Tabs defaultValue="templates" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="templates" className="text-xs">
-              <Layout className="w-3 h-3 mr-1" />
-              Templates
-            </TabsTrigger>
+        <Tabs defaultValue="themes" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="themes" className="text-xs">
               <Palette className="w-3 h-3 mr-1" />
               Themes
@@ -98,48 +93,6 @@ const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
               Colors
             </TabsTrigger>
           </TabsList>
-
-          {/* Templates Tab */}
-          <TabsContent value="templates" className="space-y-4">
-            <div className="grid gap-3">
-              <div className="grid grid-cols-2 gap-2">
-                {RESUME_TEMPLATES.map((template) => (
-                  <div
-                    key={template.id}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                      currentTheme.id === template.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                    onClick={() => onThemeChange(template)}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-xs">{template.name}</h4>
-                      <div className="flex gap-1">
-                        <div 
-                          className="w-2 h-2 rounded-full" 
-                          style={{ backgroundColor: template.primaryColor }}
-                        />
-                        <div 
-                          className="w-2 h-2 rounded-full" 
-                          style={{ backgroundColor: template.accentColor }}
-                        />
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-tight">{template.description}</p>
-                    <div className="flex gap-1 mt-2">
-                      <Badge variant="secondary" className="text-xs px-1 py-0">
-                        {template.layout}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs px-1 py-0">
-                        {template.typography}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </TabsContent>
 
           {/* Themes Tab */}
           <TabsContent value="themes" className="space-y-4">

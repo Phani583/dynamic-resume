@@ -6,7 +6,7 @@ import ResumeForm from '@/components/resume/ResumeForm';
 import ResumePreview from '@/components/resume/ResumePreview';
 import CustomizationPanel from '@/components/resume/CustomizationPanel';
 import { ResumeData, CustomizationOptions, ResumeTheme } from '@/components/resume/types';
-import { RESUME_TEMPLATES } from '@/components/resume/constants';
+import { RESUME_THEMES } from '@/components/resume/constants';
 
 const Index = () => {
   const { toast } = useToast();
@@ -33,7 +33,7 @@ const Index = () => {
   });
 
   // Current theme
-  const [currentTheme, setCurrentTheme] = useState<ResumeTheme>(RESUME_TEMPLATES[0]);
+  const [currentTheme, setCurrentTheme] = useState<ResumeTheme>(RESUME_THEMES[0]);
 
   // Customization options
   const [customization, setCustomization] = useState<CustomizationOptions>({
