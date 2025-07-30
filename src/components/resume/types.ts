@@ -35,7 +35,20 @@ export interface ResumeData {
     letterGrade?: string;
     description?: string;
   }>;
-  skills: string[];
+  skills: Array<{
+    id: string;
+    name: string;
+    category: string;
+    level: 'Beginner' | 'Intermediate' | 'Expert';
+  }>;
+  certificates: Array<{
+    id: string;
+    name: string;
+    issuer: string;
+    issueDate: string;
+    expiryDate?: string;
+    url?: string;
+  }>;
 }
 
 export interface SectionCustomization {

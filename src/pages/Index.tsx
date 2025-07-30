@@ -7,6 +7,7 @@ import ResumePreview from '@/components/resume/ResumePreview';
 import CustomizationPanel from '@/components/resume/CustomizationPanel';
 import { ResumeData, CustomizationOptions, ResumeTheme } from '@/components/resume/types';
 import { RESUME_THEMES } from '@/components/resume/constants';
+import { exportToDocx } from '@/lib/docxExporter';
 
 const Index = () => {
   const { toast } = useToast();
@@ -29,7 +30,8 @@ const Index = () => {
     },
     experience: [],
     education: [],
-    skills: []
+    skills: [],
+    certificates: []
   });
 
   // Current theme
@@ -208,11 +210,48 @@ const Index = () => {
     handlePrint();
   }, [resumeData.personalInfo.fullName, resumeData.personalInfo.email, handlePrint, toast]);
 
+  const triggerDownloadDocx = useCallback(async () => {
+    if (!resumeData.personalInfo.fullName.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your full name before downloading.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!resumeData.personalInfo.email.trim()) {
+      toast({
+        title: "Missing Information", 
+        description: "Please enter your email address before downloading.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.docx`;
+      await exportToDocx(resumeData, customization, currentTheme, filename);
+      
+      toast({
+        title: "Success",
+        description: "Resume downloaded as Word document successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to generate Word document. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [resumeData, customization, currentTheme, toast]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <Navigation 
         onDownload={triggerDownload}
+        onDownloadDocx={triggerDownloadDocx}
         isDownloading={isDownloading}
       />
 

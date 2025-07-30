@@ -1,13 +1,15 @@
 import React from 'react';
-import { FileText, Star, Download } from 'lucide-react';
+import { FileText, Star, Download, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface NavigationProps {
   onDownload: () => void;
+  onDownloadDocx: () => void;
   isDownloading: boolean;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ onDownload, isDownloading }) => {
+const Navigation: React.FC<NavigationProps> = ({ onDownload, onDownloadDocx, isDownloading }) => {
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,14 +32,27 @@ const Navigation: React.FC<NavigationProps> = ({ onDownload, isDownloading }) =>
               <span className="text-sm">Create stunning resumes in minutes</span>
             </div>
             
-            <Button 
-              onClick={onDownload} 
-              disabled={isDownloading}
-              className="bg-primary hover:bg-primary-hover text-primary-foreground"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {isDownloading ? 'Generating...' : 'Download PDF'}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  disabled={isDownloading}
+                  className="bg-primary hover:bg-primary-hover text-primary-foreground"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {isDownloading ? 'Generating...' : 'Download Resume'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={onDownload}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Download as PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onDownloadDocx}>
+                  <File className="w-4 h-4 mr-2" />
+                  Download as Word (.docx)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

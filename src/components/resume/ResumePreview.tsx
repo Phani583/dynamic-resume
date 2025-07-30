@@ -260,19 +260,64 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
         {data.skills.length > 0 && renderSection(
           'Skills & Technologies',
           'skills',
-          <div className="flex flex-wrap gap-2">
-            {data.skills.map((skill, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 rounded-full text-sm font-medium"
-                style={{
-                  backgroundColor: colors.accent + '20',
-                  color: colors.accent,
-                  border: `1px solid ${colors.accent}40`
-                }}
-              >
-                {skill}
-              </span>
+          <div className="space-y-3">
+            {Object.entries(
+              data.skills.reduce((acc, skill) => {
+                if (!acc[skill.category]) acc[skill.category] = [];
+                acc[skill.category].push(skill);
+                return acc;
+              }, {} as Record<string, typeof data.skills>)
+            ).map(([category, categorySkills]) => (
+              <div key={category}>
+                <h4 className="text-sm font-semibold mb-2" style={{ color: colors.secondary }}>
+                  {category}
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {categorySkills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 rounded-full text-sm font-medium"
+                      style={{
+                        backgroundColor: colors.accent + '20',
+                        color: colors.accent,
+                        border: `1px solid ${colors.accent}40`
+                      }}
+                    >
+                      <span className="font-medium">{skill.name}</span>
+                      <span className="text-xs opacity-75 ml-1">({skill.level})</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Certificates */}
+        {data.certificates.length > 0 && renderSection(
+          'Certifications',
+          'certificates',
+          <div className="space-y-4">
+            {data.certificates.map((cert) => (
+              <div key={cert.id}>
+                <div className="flex justify-between items-start mb-1">
+                  <div>
+                    <h3 className="font-semibold">{cert.name}</h3>
+                    <p className="font-medium" style={{ color: colors.secondary }}>{cert.issuer}</p>
+                  </div>
+                  <div className="text-sm" style={{ color: colors.secondary }}>
+                    {cert.issueDate && formatDate(cert.issueDate)}
+                    {cert.expiryDate && ` - ${formatDate(cert.expiryDate)}`}
+                  </div>
+                </div>
+                {cert.url && (
+                  <div className="text-sm">
+                    <a href={cert.url} className="hover:underline" style={{ color: colors.accent }}>
+                      View Certificate
+                    </a>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
@@ -371,7 +416,10 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
                 {data.skills.map((skill, index) => (
                   <div key={index} className="text-sm flex items-center gap-2">
                     <span>{getBulletStyle('skills')}</span>
-                    {skill}
+                    <div className="flex flex-col">
+                      <span className="font-medium">{skill.name}</span>
+                      <span className="text-xs opacity-75">{skill.level} • {skill.category}</span>
+                    </div>
                   </div>
                 ))}
               </div>

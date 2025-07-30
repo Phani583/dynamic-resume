@@ -80,9 +80,15 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
 
   const addSkill = () => {
     if (newSkill.trim()) {
+      const newSkillObj = {
+        id: Date.now().toString(),
+        name: newSkill.trim(),
+        category: 'General',
+        level: 'Intermediate' as const
+      };
       onDataChange({
         ...data,
-        skills: [...data.skills, newSkill.trim()]
+        skills: [...data.skills, newSkillObj]
       });
       setNewSkill('');
     }
@@ -228,15 +234,23 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
         data.experience.map(exp => `${exp.jobTitle} at ${exp.company}`)
       );
       
+      // Convert suggestions to skill objects
+      const newSkills = suggestions.map((skill, index) => ({
+        id: `ai-${Date.now()}-${index}`,
+        name: skill,
+        category: 'General',
+        level: 'Intermediate' as const
+      }));
+      
       // Merge with existing skills, avoiding duplicates
-      const existingSkills = data.skills.map(s => s.toLowerCase());
-      const newSkills = suggestions.filter(skill => 
-        !existingSkills.includes(skill.toLowerCase())
+      const existingSkills = data.skills.map(s => s.name.toLowerCase());
+      const uniqueNewSkills = newSkills.filter(skill => 
+        !existingSkills.includes(skill.name.toLowerCase())
       );
       
       onDataChange({
         ...data,
-        skills: [...data.skills, ...newSkills]
+        skills: [...data.skills, ...uniqueNewSkills]
       });
       
       toast({
@@ -705,19 +719,137 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
               <Plus className="w-4 h-4" />
             </Button>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="space-y-2">
             {data.skills.map((skill, index) => (
-              <Badge key={index} variant="secondary" className="flex items-center gap-2">
-                {skill}
-                <button
-                  onClick={() => removeSkill(index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </Badge>
+              <div key={skill.id} className="p-3 border rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-medium">{skill.name}</div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeSkill(index)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs">Category</Label>
+                    <select
+                      value={skill.category}
+                      onChange={(e) => handleArrayItemChange('skills', index, 'category', e.target.value)}
+                      className="w-full p-1 text-sm border rounded"
+                    >
+                      <option value="General">General</option>
+                      <option value="Technical">Technical</option>
+                      <option value="Programming">Programming</option>
+                      <option value="Tools">Tools</option>
+                      <option value="Languages">Languages</option>
+                      <option value="Soft Skills">Soft Skills</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Level</Label>
+                    <select
+                      value={skill.level}
+                      onChange={(e) => handleArrayItemChange('skills', index, 'level', e.target.value)}
+                      className="w-full p-1 text-sm border rounded"
+                    >
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Expert">Expert</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Certificates */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="w-5 h-5" />
+            Certificates
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {data.certificates.map((cert, index) => (
+            <div key={cert.id} className="p-4 border rounded-lg space-y-4">
+              <div className="flex justify-between items-start">
+                <h4 className="font-medium">Certificate {index + 1}</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => removeArrayItem('certificates', index)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Certificate Name *</Label>
+                  <Input
+                    value={cert.name}
+                    onChange={(e) => handleArrayItemChange('certificates', index, 'name', e.target.value)}
+                    placeholder="AWS Certified Developer"
+                  />
+                </div>
+                <div>
+                  <Label>Issuing Organization *</Label>
+                  <Input
+                    value={cert.issuer}
+                    onChange={(e) => handleArrayItemChange('certificates', index, 'issuer', e.target.value)}
+                    placeholder="Amazon Web Services"
+                  />
+                </div>
+                <div>
+                  <Label>Issue Date</Label>
+                  <Input
+                    type="date"
+                    value={cert.issueDate}
+                    onChange={(e) => handleArrayItemChange('certificates', index, 'issueDate', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>Expiry Date (Optional)</Label>
+                  <Input
+                    type="date"
+                    value={cert.expiryDate || ''}
+                    onChange={(e) => handleArrayItemChange('certificates', index, 'expiryDate', e.target.value)}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label>Certificate URL (Optional)</Label>
+                  <Input
+                    type="url"
+                    value={cert.url || ''}
+                    onChange={(e) => handleArrayItemChange('certificates', index, 'url', e.target.value)}
+                    placeholder="https://www.credly.com/badges/..."
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          <Button
+            onClick={() =>
+              addArrayItem('certificates', {
+                id: Date.now().toString(),
+                name: '',
+                issuer: '',
+                issueDate: '',
+                expiryDate: '',
+                url: ''
+              })
+            }
+            className="w-full"
+            variant="outline"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Certificate
+          </Button>
         </CardContent>
       </Card>
 
