@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
   Trash2, 
@@ -19,9 +20,13 @@ import {
   Globe,
   Briefcase,
   GraduationCap,
-  Award
+  Award,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { ResumeData } from './types';
+import { initializeOpenAI, generateExperienceDescription, generateEducationDescription, generateSkillsSuggestions } from '@/lib/aiGenerator';
+import AIKeyModal from './AIKeyModal';
 
 interface ResumeFormProps {
   data: ResumeData;
@@ -30,6 +35,10 @@ interface ResumeFormProps {
 
 const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
   const [newSkill, setNewSkill] = useState('');
+  const [showAIKeyModal, setShowAIKeyModal] = useState(false);
+  const [apiKey, setApiKey] = useState(localStorage.getItem('openai_api_key') || '');
+  const [isGenerating, setIsGenerating] = useState<{ [key: string]: boolean }>({});
+  const { toast } = useToast();
 
   const handleInputChange = (section: keyof ResumeData, field: string, value: any) => {
     onDataChange({
@@ -96,6 +105,152 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
         handleInputChange('personalInfo', 'profileImage', e.target?.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAIKeySubmit = (newApiKey: string) => {
+    setApiKey(newApiKey);
+    localStorage.setItem('openai_api_key', newApiKey);
+    initializeOpenAI(newApiKey);
+    toast({
+      title: "API Key Saved",
+      description: "AI generation features are now available.",
+    });
+  };
+
+  const generateExperienceAI = async (index: number) => {
+    const exp = data.experience[index];
+    if (!exp.jobTitle || !exp.company) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in job title and company first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!apiKey) {
+      setShowAIKeyModal(true);
+      return;
+    }
+
+    setIsGenerating(prev => ({ ...prev, [`exp-${index}`]: true }));
+    
+    try {
+      const description = await generateExperienceDescription(
+        exp.jobTitle,
+        exp.company,
+        exp.description
+      );
+      
+      handleArrayItemChange('experience', index, 'description', description);
+      
+      toast({
+        title: "Description Generated",
+        description: "AI-generated content has been added. Feel free to edit it.",
+      });
+    } catch (error) {
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate description.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(prev => ({ ...prev, [`exp-${index}`]: false }));
+    }
+  };
+
+  const generateEducationAI = async (index: number) => {
+    const edu = data.education[index];
+    if (!edu.degree || !edu.school) {
+      toast({
+        title: "Missing Information", 
+        description: "Please fill in degree and school first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!apiKey) {
+      setShowAIKeyModal(true);
+      return;
+    }
+
+    setIsGenerating(prev => ({ ...prev, [`edu-${index}`]: true }));
+    
+    try {
+      const description = await generateEducationDescription(
+        edu.degree,
+        edu.school
+      );
+      
+      // Add description field to education if it doesn't exist
+      handleArrayItemChange('education', index, 'description', description);
+      
+      toast({
+        title: "Description Generated",
+        description: "AI-generated content has been added.",
+      });
+    } catch (error) {
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate description.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(prev => ({ ...prev, [`edu-${index}`]: false }));
+    }
+  };
+
+  const generateSkillsAI = async () => {
+    if (data.experience.length === 0) {
+      toast({
+        title: "Missing Information",
+        description: "Please add some work experience first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!apiKey) {
+      setShowAIKeyModal(true);
+      return;
+    }
+
+    setIsGenerating(prev => ({ ...prev, 'skills': true }));
+    
+    try {
+      const jobTitles = data.experience.map(exp => exp.jobTitle).filter(Boolean);
+      const mainJobTitle = jobTitles[0] || 'Professional';
+      
+      const suggestions = await generateSkillsSuggestions(
+        mainJobTitle,
+        data.experience.map(exp => `${exp.jobTitle} at ${exp.company}`)
+      );
+      
+      // Merge with existing skills, avoiding duplicates
+      const existingSkills = data.skills.map(s => s.toLowerCase());
+      const newSkills = suggestions.filter(skill => 
+        !existingSkills.includes(skill.toLowerCase())
+      );
+      
+      onDataChange({
+        ...data,
+        skills: [...data.skills, ...newSkills]
+      });
+      
+      toast({
+        title: "Skills Generated",
+        description: `Added ${newSkills.length} new skill suggestions.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate skills.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(prev => ({ ...prev, 'skills': false }));
     }
   };
 
@@ -307,7 +462,23 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
                 </div>
               </div>
               <div>
-                <Label>Description</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Description</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => generateExperienceAI(index)}
+                    disabled={isGenerating[`exp-${index}`]}
+                    className="text-xs"
+                  >
+                    {isGenerating[`exp-${index}`] ? (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3 mr-1" />
+                    )}
+                    Generate with AI
+                  </Button>
+                </div>
                 <Textarea
                   value={exp.description}
                   onChange={(e) => handleArrayItemChange('experience', index, 'description', e.target.value)}
@@ -403,6 +574,76 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
                   </div>
                 </div>
               </div>
+              
+              {/* Academic Performance */}
+              <div className="border-t pt-4">
+                <Label className="text-sm font-medium mb-3 block">Academic Performance (Optional)</Label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-xs">CGPA</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={edu.cgpa || ''}
+                        onChange={(e) => handleArrayItemChange('education', index, 'cgpa', e.target.value)}
+                        placeholder="3.8"
+                        className="text-sm"
+                      />
+                      <Input
+                        value={edu.cgpaScale || ''}
+                        onChange={(e) => handleArrayItemChange('education', index, 'cgpaScale', e.target.value)}
+                        placeholder="4.0"
+                        className="text-sm w-16"
+                      />
+                    </div>
+                    <Label className="text-xs text-muted-foreground">CGPA / Scale</Label>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Percentage</Label>
+                    <Input
+                      value={edu.percentage || ''}
+                      onChange={(e) => handleArrayItemChange('education', index, 'percentage', e.target.value)}
+                      placeholder="85%"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Letter Grade</Label>
+                    <Input
+                      value={edu.letterGrade || ''}
+                      onChange={(e) => handleArrayItemChange('education', index, 'letterGrade', e.target.value)}
+                      placeholder="A"
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Description with AI */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Description (Optional)</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => generateEducationAI(index)}
+                    disabled={isGenerating[`edu-${index}`]}
+                    className="text-xs"
+                  >
+                    {isGenerating[`edu-${index}`] ? (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3 mr-1" />
+                    )}
+                    Generate with AI
+                  </Button>
+                </div>
+                <Textarea
+                  value={edu.description || ''}
+                  onChange={(e) => handleArrayItemChange('education', index, 'description', e.target.value)}
+                  placeholder="Relevant coursework, projects, or achievements..."
+                  rows={2}
+                />
+              </div>
             </div>
           ))}
           <Button
@@ -413,7 +654,12 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
                 school: '',
                 startYear: '',
                 endYear: '',
-                current: false
+                current: false,
+                cgpa: '',
+                cgpaScale: '',
+                percentage: '',
+                letterGrade: '',
+                description: ''
               })
             }
             className="w-full"
@@ -431,6 +677,20 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
           <CardTitle className="flex items-center gap-2">
             <Award className="w-5 h-5" />
             Skills
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={generateSkillsAI}
+              disabled={isGenerating['skills']}
+              className="ml-auto text-xs"
+            >
+              {isGenerating['skills'] ? (
+                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              ) : (
+                <Sparkles className="w-3 h-3 mr-1" />
+              )}
+              Generate with AI
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -460,6 +720,13 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Key Modal */}
+      <AIKeyModal
+        isOpen={showAIKeyModal}
+        onClose={() => setShowAIKeyModal(false)}
+        onSubmit={handleAIKeySubmit}
+      />
     </div>
   );
 };

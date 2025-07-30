@@ -119,25 +119,25 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
               {data.publicLinks.github && (
                 <a href={data.publicLinks.github} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
                   <Github className="w-4 h-4" />
-                  GitHub
+                  {data.publicLinks.github}
                 </a>
               )}
               {data.publicLinks.linkedin && (
                 <a href={data.publicLinks.linkedin} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
                   <Linkedin className="w-4 h-4" />
-                  LinkedIn
+                  {data.publicLinks.linkedin}
                 </a>
               )}
               {data.publicLinks.portfolio && (
                 <a href={data.publicLinks.portfolio} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
                   <Globe className="w-4 h-4" />
-                  Portfolio
+                  {data.publicLinks.portfolio}
                 </a>
               )}
               {data.publicLinks.website && (
                 <a href={data.publicLinks.website} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
                   <Globe className="w-4 h-4" />
-                  Website
+                  {data.publicLinks.website}
                 </a>
               )}
             </div>
@@ -221,16 +221,36 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
         {data.education.length > 0 && renderSection(
           'Education',
           'education',
-          <div className="space-y-3">
+          <div className="space-y-4">
             {data.education.map((edu) => (
-              <div key={edu.id} className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold">{edu.degree}</h3>
-                  <p style={{ color: colors.secondary }}>{edu.school}</p>
+              <div key={edu.id}>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-semibold">{edu.degree}</h3>
+                    <p style={{ color: colors.secondary }}>{edu.school}</p>
+                    {/* Academic Performance */}
+                    {(edu.cgpa || edu.percentage || edu.letterGrade) && (
+                      <div className="text-sm mt-1" style={{ color: colors.secondary }}>
+                        {edu.cgpa && edu.cgpaScale && <span>CGPA: {edu.cgpa}/{edu.cgpaScale}</span>}
+                        {edu.percentage && <span>{edu.cgpa ? ' | ' : ''}Percentage: {edu.percentage}</span>}
+                        {edu.letterGrade && <span>{(edu.cgpa || edu.percentage) ? ' | ' : ''}Grade: {edu.letterGrade}</span>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-sm" style={{ color: colors.secondary }}>
+                    {edu.startYear} - {edu.current ? 'Present' : edu.endYear}
+                  </div>
                 </div>
-                <div className="text-sm" style={{ color: colors.secondary }}>
-                  {edu.startYear} - {edu.current ? 'Present' : edu.endYear}
-                </div>
+                {edu.description && (
+                  <div className="text-sm leading-relaxed">
+                    {edu.description.split('\n').map((line, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <span className="mt-1">{getBulletStyle('education')}</span>
+                        <span>{line}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -312,29 +332,29 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
               <h3 className="font-bold text-sm uppercase tracking-wide mb-3" style={{ color: colors.primary }}>
                 {getSectionIcon('links')} Links
               </h3>
-              <div className="space-y-2 text-sm">
+               <div className="space-y-2 text-sm">
                 {data.publicLinks.github && (
                   <a href={data.publicLinks.github} className="flex items-center gap-2 hover:underline" style={{ color: colors.accent }}>
                     <Github className="w-3 h-3" />
-                    GitHub
+                    {data.publicLinks.github}
                   </a>
                 )}
                 {data.publicLinks.linkedin && (
                   <a href={data.publicLinks.linkedin} className="flex items-center gap-2 hover:underline" style={{ color: colors.accent }}>
                     <Linkedin className="w-3 h-3" />
-                    LinkedIn
+                    {data.publicLinks.linkedin}
                   </a>
                 )}
                 {data.publicLinks.portfolio && (
                   <a href={data.publicLinks.portfolio} className="flex items-center gap-2 hover:underline" style={{ color: colors.accent }}>
                     <Globe className="w-3 h-3" />
-                    Portfolio
+                    {data.publicLinks.portfolio}
                   </a>
                 )}
                 {data.publicLinks.website && (
                   <a href={data.publicLinks.website} className="flex items-center gap-2 hover:underline" style={{ color: colors.accent }}>
                     <Globe className="w-3 h-3" />
-                    Website
+                    {data.publicLinks.website}
                   </a>
                 )}
               </div>

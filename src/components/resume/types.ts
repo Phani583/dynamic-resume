@@ -29,6 +29,11 @@ export interface ResumeData {
     startYear: string;
     endYear: string;
     current: boolean;
+    cgpa?: string;
+    cgpaScale?: string;
+    percentage?: string;
+    letterGrade?: string;
+    description?: string;
   }>;
   skills: string[];
 }
