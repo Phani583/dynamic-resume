@@ -41,11 +41,37 @@ const generateRTFContent = (
     return `\\red${r}\\green${g}\\blue${b}`;
   };
 
+  // Get font mapping
+  const getFontMapping = (fontFamily: string) => {
+    if (fontFamily.includes('Times')) return '\\f1';
+    if (fontFamily.includes('Calibri')) return '\\f2';
+    return '\\f0'; // Default to Arial
+  };
+
+  // Get spacing based on customization
+  const getSpacingValue = () => {
+    switch (customization.spacing) {
+      case 'compact': return '\\sb120\\sa120'; // 6pt before/after
+      case 'spacious': return '\\sb240\\sa240'; // 12pt before/after
+      default: return '\\sb180\\sa180'; // 9pt before/after
+    }
+  };
+
+  // Get section font size based on customization
+  const getSectionFontSize = (sectionId: string) => {
+    const section = customization.sections[sectionId];
+    if (section?.fontSize) {
+      const size = parseInt(section.fontSize.replace('px', ''));
+      return Math.round(size * 2); // Convert px to half-points
+    }
+    return 24; // Default 12pt
+  };
+
   // Enhanced RTF with color table and font table
   let rtf = '{\\rtf1\\ansi\\deff0 ';
   
-  // Font table with modern fonts
-  rtf += '{\\fonttbl {\\f0\\fswiss\\fcharset0 Arial;}{\\f1\\froman\\fcharset0 Times New Roman;}{\\f2\\fmodern\\fcharset0 Calibri;}}';
+  // Font table with modern fonts matching the preview
+  rtf += '{\\fonttbl {\\f0\\fswiss\\fcharset0 Arial;}{\\f1\\froman\\fcharset0 Times New Roman;}{\\f2\\fmodern\\fcharset0 Calibri;}{\\f3\\fswiss\\fcharset0 Helvetica;}}';
   
   // Color table
   rtf += '{\\colortbl ;';
@@ -53,45 +79,85 @@ const generateRTFContent = (
   rtf += hexToRTFColor(customization.colors.secondary) + ';'; // \cf2  
   rtf += hexToRTFColor(customization.colors.accent) + ';'; // \cf3
   rtf += hexToRTFColor(customization.colors.text) + ';'; // \cf4
-  rtf += '\\red0\\green0\\blue0;'; // \cf5 - black
+  rtf += hexToRTFColor(customization.colors.background) + ';'; // \cf5
+  rtf += '\\red0\\green0\\blue0;'; // \cf6 - black
+  rtf += '\\red255\\green255\\blue255;'; // \cf7 - white
   rtf += '}';
 
-  // Page layout
+  // Page layout with background color
   rtf += '\\paperw12240\\paperh15840\\margl720\\margr720\\margt720\\margb720';
+  rtf += `\\cb5`; // Set background color
   
-  // Header with primary color and larger font
+  // Header styling to match preview exactly
   const headerAlignment = theme.headerStyle === 'centered' ? '\\qc' : 
                          theme.headerStyle === 'right' ? '\\qr' : '\\ql';
   
-  rtf += `${headerAlignment}\\f0\\fs48\\cf1\\b ${escapeRTF(data.personalInfo.fullName)}\\b0\\fs20\\cf4\\par\\par`;
-  
-  // Contact Info with icons and better formatting
-  const contactInfo = [];
-  if (data.personalInfo.email) contactInfo.push(`✉ ${data.personalInfo.email}`);
-  if (data.personalInfo.phone) contactInfo.push(`📞 ${data.personalInfo.phone}`);
-  if (data.personalInfo.location) contactInfo.push(`📍 ${data.personalInfo.location}`);
-  
-  if (contactInfo.length > 0) {
-    rtf += `\\qc\\cf2 ${escapeRTF(contactInfo.join('  |  '))}\\cf4\\par`;
-  }
-
-  // Links with better formatting
-  const links = [];
-  if (data.publicLinks.github) links.push(`🔗 GitHub: ${data.publicLinks.github}`);
-  if (data.publicLinks.linkedin) links.push(`💼 LinkedIn: ${data.publicLinks.linkedin}`);
-  if (data.publicLinks.portfolio) links.push(`🌐 Portfolio: ${data.publicLinks.portfolio}`);
-  if (data.publicLinks.website) links.push(`🌍 Website: ${data.publicLinks.website}`);
-  
-  if (links.length > 0) {
-    rtf += `\\qc\\cf2 ${escapeRTF(links.join('  |  '))}\\cf4\\par\\par`;
-  }
-
-  // Helper function to create section headers with dividers and icons
+  // Helper function to create section headers matching preview styling
   const createSectionHeader = (title: string, sectionId: string) => {
-    const icon = customization.sections[sectionId]?.icon || '';
-    const dividerLine = '\\qc\\cf2\\fs16' + '_'.repeat(50) + '\\cf4\\fs20\\par\\par';
-    return `${dividerLine}\\ql\\cf1\\b\\fs32 ${icon} ${title}\\cf4\\b0\\fs20\\par\\par`;
+    const section = customization.sections[sectionId];
+    const icon = section?.icon || '';
+    const fontSize = getSectionFontSize(sectionId);
+    const fontFamily = getFontMapping(section?.fontFamily || theme.fontFamily);
+    
+    // Divider line based on section style
+    const dividerStyle = section?.dividerStyle || 'simple';
+    let dividerLine = '';
+    
+    switch (dividerStyle) {
+      case 'double':
+        dividerLine = '\\cf1\\fs16' + '═'.repeat(60) + '\\cf4\\fs20\\par';
+        break;
+      case 'dotted':
+        dividerLine = '\\cf1\\fs16' + '·'.repeat(80) + '\\cf4\\fs20\\par';
+        break;
+      case 'dashed':
+        dividerLine = '\\cf1\\fs16' + '- '.repeat(40) + '\\cf4\\fs20\\par';
+        break;
+      default:
+        dividerLine = '\\cf1\\fs16' + '_'.repeat(60) + '\\cf4\\fs20\\par';
+    }
+    
+    return `\\ql${fontFamily}\\fs${fontSize}\\cf1\\b ${icon ? icon + ' ' : ''}${title}\\cf4\\b0\\fs20\\par${dividerLine}\\par`;
   };
+
+  // Get bullet style for sections
+  const getBulletStyle = (sectionId: string) => {
+    return customization.sections[sectionId]?.bulletStyle || '•';
+  };
+  
+  // Header section with profile image placeholder
+  rtf += `${headerAlignment}${getFontMapping(theme.fontFamily)}\\fs48\\cf1\\b ${escapeRTF(data.personalInfo.fullName)}\\b0\\fs20\\cf4\\par\\par`;
+  
+  if (data.personalInfo.profileImage) {
+    rtf += `\\qc\\cf2\\i [Profile Image]\\i0\\cf4\\par`;
+  }
+  
+  // Contact info styled like the preview with proper spacing
+  const contactParts = [];
+  if (data.personalInfo.email) contactParts.push(`✉ ${data.personalInfo.email}`);
+  if (data.personalInfo.phone) contactParts.push(`📞 ${data.personalInfo.phone}`);
+  if (data.personalInfo.location) contactParts.push(`📍 ${data.personalInfo.location}`);
+  
+  if (contactParts.length > 0) {
+    const alignment = theme.headerStyle === 'centered' ? '\\qc' : 
+                     theme.headerStyle === 'right' ? '\\qr' : '\\ql';
+    rtf += `${alignment}\\cf2\\fs20 ${escapeRTF(contactParts.join('  |  '))}\\cf4\\par`;
+  }
+
+  // Public links styled like the preview
+  const linkParts = [];
+  if (data.publicLinks.github) linkParts.push(`🔗 ${data.publicLinks.github}`);
+  if (data.publicLinks.linkedin) linkParts.push(`💼 ${data.publicLinks.linkedin}`);
+  if (data.publicLinks.portfolio) linkParts.push(`🌐 ${data.publicLinks.portfolio}`);
+  if (data.publicLinks.website) linkParts.push(`🌍 ${data.publicLinks.website}`);
+  
+  if (linkParts.length > 0) {
+    const alignment = theme.headerStyle === 'centered' ? '\\qc' : 
+                     theme.headerStyle === 'right' ? '\\qr' : '\\ql';
+    rtf += `${alignment}\\cf3\\fs18 ${escapeRTF(linkParts.join('  |  '))}\\cf4\\par\\par`;
+  }
+
+  rtf += getSpacingValue();
 
   // Professional Summary
   if (data.personalInfo.summary) {
@@ -99,68 +165,70 @@ const generateRTFContent = (
     rtf += `\\ql\\li360\\fs22 ${escapeRTF(data.personalInfo.summary)}\\li0\\fs20\\par\\par`;
   }
 
-  // Professional Experience  
+  // Professional Experience - Enhanced to match preview layout
   if (data.experience.length > 0) {
     rtf += createSectionHeader('Professional Experience', 'experience');
     
     data.experience.forEach((exp, index) => {
-      if (index > 0) rtf += '\\par';
+      if (index > 0) rtf += getSpacingValue();
       
-      // Job title in primary color and bold
-      rtf += `\\cf1\\b\\fs24 ${escapeRTF(exp.jobTitle)}\\cf4\\b0\\fs20\\par`;
+      // Job title in primary color and bold, larger font
+      rtf += `\\cf1\\b\\fs26 ${escapeRTF(exp.jobTitle)}\\cf4\\b0\\fs20\\par`;
       
-      // Company and date on same line
-      rtf += `\\cf2\\b ${escapeRTF(exp.company)}\\cf4\\b0`;
-      const dateRange = `${formatDate(exp.startDate)} - ${exp.current ? 'Present' : formatDate(exp.endDate)}`;
-      rtf += `\\qr\\cf2\\i ${escapeRTF(dateRange)}\\cf4\\i0\\ql\\par`;
+      // Company in secondary color with date aligned to right using tabs
+      rtf += `\\cf2\\b\\fs22 ${escapeRTF(exp.company)}\\cf4\\b0\\fs20`;
+      const dateRange = `📅 ${formatDate(exp.startDate)} - ${exp.current ? 'Present' : formatDate(exp.endDate)}`;
+      rtf += `\\tab\\tab\\tab\\tab\\qr\\cf2\\i\\fs18 ${escapeRTF(dateRange)}\\cf4\\i0\\fs20\\ql\\par`;
       
-      // Description with proper bullets
+      // Description with enhanced bullet styling matching preview
       if (exp.description) {
-        rtf += '\\li720\\par'; // Indent for bullets
+        rtf += '\\par'; 
         exp.description.split('\n').forEach(line => {
           if (line.trim()) {
-            const bulletStyle = customization.sections.experience?.bulletStyle || '•';
-            rtf += `\\cf3 ${bulletStyle}\\cf4\\tab ${escapeRTF(line.trim())}\\par`;
+            const bulletStyle = getBulletStyle('experience');
+            rtf += `\\li720\\cf3\\fs16 ${bulletStyle}\\cf4\\fs20\\tab ${escapeRTF(line.trim())}\\par`;
           }
         });
-        rtf += '\\li0'; // Reset indent
+        rtf += '\\li0'; 
       }
       rtf += '\\par';
     });
   }
 
-  // Education
+  // Education - Enhanced to match preview layout
   if (data.education.length > 0) {
     rtf += createSectionHeader('Education', 'education');
     
     data.education.forEach((edu, index) => {
-      if (index > 0) rtf += '\\par';
+      if (index > 0) rtf += getSpacingValue();
       
       // Degree in primary color and bold
-      rtf += `\\cf1\\b\\fs24 ${escapeRTF(edu.degree)}\\cf4\\b0\\fs20\\par`;
+      rtf += `\\cf1\\b\\fs26 ${escapeRTF(edu.degree)}\\cf4\\b0\\fs20\\par`;
       
-      // School and year
-      rtf += `\\cf2\\b ${escapeRTF(edu.school)}\\cf4\\b0`;
+      // School with secondary color
+      rtf += `\\cf2\\b\\fs22 ${escapeRTF(edu.school)}\\cf4\\b0\\fs20\\par`;
+      
+      // Year range aligned to right
       const yearRange = `${edu.startYear} - ${edu.current ? 'Present' : edu.endYear}`;
-      rtf += `\\qr\\cf2\\i ${escapeRTF(yearRange)}\\cf4\\i0\\ql\\par`;
+      rtf += `\\qr\\cf2\\i\\fs18 ${escapeRTF(yearRange)}\\cf4\\i0\\fs20\\ql\\par`;
       
-      // Grade information
+      // Academic performance section (matching preview exactly)
       const gradeInfo = [];
       if (edu.cgpa && edu.cgpaScale) gradeInfo.push(`CGPA: ${edu.cgpa}/${edu.cgpaScale}`);
       if (edu.percentage) gradeInfo.push(`Percentage: ${edu.percentage}%`);
       if (edu.letterGrade) gradeInfo.push(`Grade: ${edu.letterGrade}`);
       
       if (gradeInfo.length > 0) {
-        rtf += `\\cf3 ${escapeRTF(gradeInfo.join(' | '))}\\cf4\\par`;
+        rtf += `\\cf2\\fs18 ${escapeRTF(gradeInfo.join(' | '))}\\cf4\\fs20\\par`;
       }
       
-      // Description with bullets
+      // Description with enhanced bullet styling
       if (edu.description) {
-        rtf += '\\li720\\par';
+        rtf += '\\par';
         edu.description.split('\n').forEach(line => {
           if (line.trim()) {
-            const bulletStyle = customization.sections.education?.bulletStyle || '•';
-            rtf += `\\cf3 ${bulletStyle}\\cf4\\tab ${escapeRTF(line.trim())}\\par`;
+            const bulletStyle = getBulletStyle('education');
+            rtf += `\\li720\\cf3\\fs16 ${bulletStyle}\\cf4\\fs20\\tab ${escapeRTF(line.trim())}\\par`;
           }
         });
         rtf += '\\li0';
@@ -169,7 +237,7 @@ const generateRTFContent = (
     });
   }
 
-  // Skills & Technologies
+  // Skills & Technologies - Enhanced to match preview pill-style
   if (data.skills.length > 0) {
     rtf += createSectionHeader('Skills & Technologies', 'skills');
     
@@ -180,13 +248,19 @@ const generateRTFContent = (
     }, {} as Record<string, typeof data.skills>);
     
     Object.entries(skillsByCategory).forEach(([category, categorySkills]) => {
-      rtf += `\\cf1\\b\\fs22 ${escapeRTF(category)}\\cf4\\b0\\fs20\\par`;
-      const skillList = categorySkills.map(skill => {
-        const levelIndicator = skill.level === 'Expert' ? '★★★' : 
-                             skill.level === 'Intermediate' ? '★★☆' : '★☆☆';
-        return `${skill.name} ${levelIndicator}`;
-      }).join(' • ');
-      rtf += `\\li360\\cf3 ${escapeRTF(skillList)}\\cf4\\li0\\par\\par`;
+      // Category header with secondary color
+      rtf += `\\cf2\\b\\fs20 ${escapeRTF(category)}\\cf4\\b0\\fs20\\par`;
+      
+      // Skills as pill-like format with background highlighting
+      categorySkills.forEach((skill, skillIndex) => {
+        const levelIndicator = skill.level === 'Expert' ? '●●●' : 
+                             skill.level === 'Intermediate' ? '●●○' : '●○○';
+        
+        // Simulate pill styling with borders and background
+        if (skillIndex > 0) rtf += ' ';
+        rtf += `\\highlight3\\cf4 ${escapeRTF(skill.name)} (${skill.level}) \\highlight0`;
+      });
+      rtf += '\\par\\par';
     });
   }
 
