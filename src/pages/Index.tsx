@@ -230,12 +230,12 @@ const Index = () => {
     }
 
     try {
-      const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.docx`;
+      const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.rtf`;
       await exportToDocx(resumeData, customization, currentTheme, filename);
       
       toast({
         title: "Success",
-        description: "Resume downloaded as Word document successfully!",
+        description: "Resume downloaded as RTF (compatible with Word) successfully!",
       });
     } catch (error) {
       toast({

@@ -1,56 +1,42 @@
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import { ResumeData, CustomizationOptions, ResumeTheme } from '@/components/resume/types';
 
-// Convert resume data to DOCX
+// Convert resume data to RTF format (compatible with Word)
 export const exportToDocx = async (
   data: ResumeData,
   customization: CustomizationOptions,
   theme: ResumeTheme,
-  filename: string = 'resume.docx'
+  filename: string = 'resume.rtf'
 ) => {
   try {
-    const doc = new Document({
-      sections: [{
-        properties: {},
-        children: generateDocxContent(data, customization, theme),
-      }],
-    });
-
-    const buffer = await Packer.toBuffer(doc);
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    const rtfContent = generateRTFContent(data, customization, theme);
+    const blob = new Blob([rtfContent], {
+      type: 'application/rtf'
     });
     
     saveAs(blob, filename);
   } catch (error) {
-    console.error('Error exporting to DOCX:', error);
+    console.error('Error exporting to RTF:', error);
     throw new Error('Failed to export resume as Word document');
   }
 };
 
-const generateDocxContent = (
+const generateRTFContent = (
   data: ResumeData,
   customization: CustomizationOptions,
   theme: ResumeTheme
 ) => {
-  const content = [];
-  
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   };
 
+  let rtf = '{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}';
+  
   // Header
-  content.push(
-    new Paragraph({
-      text: data.personalInfo.fullName,
-      heading: HeadingLevel.TITLE,
-      alignment: AlignmentType.CENTER,
-    })
-  );
-
+  rtf += '\\qc\\b\\fs36 ' + escapeRTF(data.personalInfo.fullName) + '\\b0\\fs24\\par\\par';
+  
   // Contact Info
   const contactInfo = [];
   if (data.personalInfo.email) contactInfo.push(`Email: ${data.personalInfo.email}`);
@@ -58,12 +44,7 @@ const generateDocxContent = (
   if (data.personalInfo.location) contactInfo.push(`Location: ${data.personalInfo.location}`);
   
   if (contactInfo.length > 0) {
-    content.push(
-      new Paragraph({
-        text: contactInfo.join(' | '),
-        alignment: AlignmentType.CENTER,
-      })
-    );
+    rtf += '\\qc ' + escapeRTF(contactInfo.join(' | ')) + '\\par';
   }
 
   // Links
@@ -74,109 +55,43 @@ const generateDocxContent = (
   if (data.publicLinks.website) links.push(`Website: ${data.publicLinks.website}`);
   
   if (links.length > 0) {
-    content.push(
-      new Paragraph({
-        text: links.join(' | '),
-        alignment: AlignmentType.CENTER,
-      })
-    );
+    rtf += '\\qc ' + escapeRTF(links.join(' | ')) + '\\par\\par';
   }
-
-  content.push(new Paragraph({ text: "" })); // Empty line
 
   // Summary
   if (data.personalInfo.summary) {
-    content.push(
-      new Paragraph({
-        text: "Professional Summary",
-        heading: HeadingLevel.HEADING_1,
-      })
-    );
-    content.push(
-      new Paragraph({
-        text: data.personalInfo.summary,
-      })
-    );
-    content.push(new Paragraph({ text: "" }));
+    rtf += '\\ql\\b\\fs28 Professional Summary\\b0\\fs24\\par';
+    rtf += escapeRTF(data.personalInfo.summary) + '\\par\\par';
   }
 
   // Experience
   if (data.experience.length > 0) {
-    content.push(
-      new Paragraph({
-        text: "Professional Experience",
-        heading: HeadingLevel.HEADING_1,
-      })
-    );
+    rtf += '\\ql\\b\\fs28 Professional Experience\\b0\\fs24\\par';
     
     data.experience.forEach(exp => {
-      content.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: exp.jobTitle, bold: true }),
-          ],
-        })
-      );
-      content.push(
-        new Paragraph({
-          text: exp.company,
-        })
-      );
-      content.push(
-        new Paragraph({
-          children: [
-            new TextRun({ 
-              text: `${formatDate(exp.startDate)} - ${exp.current ? 'Present' : formatDate(exp.endDate)}`,
-              italics: true 
-            }),
-          ],
-        })
-      );
+      rtf += '\\b ' + escapeRTF(exp.jobTitle) + '\\b0\\par';
+      rtf += escapeRTF(exp.company) + '\\par';
+      rtf += '\\i ' + escapeRTF(`${formatDate(exp.startDate)} - ${exp.current ? 'Present' : formatDate(exp.endDate)}`) + '\\i0\\par';
+      
       if (exp.description) {
         exp.description.split('\n').forEach(line => {
-          content.push(
-            new Paragraph({
-              text: `• ${line}`,
-            })
-          );
+          if (line.trim()) {
+            rtf += '\\bullet ' + escapeRTF(line) + '\\par';
+          }
         });
       }
-      content.push(new Paragraph({ text: "" }));
+      rtf += '\\par';
     });
   }
 
   // Education
   if (data.education.length > 0) {
-    content.push(
-      new Paragraph({
-        text: "Education",
-        heading: HeadingLevel.HEADING_1,
-      })
-    );
+    rtf += '\\ql\\b\\fs28 Education\\b0\\fs24\\par';
     
     data.education.forEach(edu => {
-      content.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: edu.degree, bold: true }),
-          ],
-        })
-      );
-      content.push(
-        new Paragraph({
-          text: edu.school,
-        })
-      );
-      content.push(
-        new Paragraph({
-          children: [
-            new TextRun({ 
-              text: `${edu.startYear} - ${edu.current ? 'Present' : edu.endYear}`,
-              italics: true 
-            }),
-          ],
-        })
-      );
+      rtf += '\\b ' + escapeRTF(edu.degree) + '\\b0\\par';
+      rtf += escapeRTF(edu.school) + '\\par';
+      rtf += '\\i ' + escapeRTF(`${edu.startYear} - ${edu.current ? 'Present' : edu.endYear}`) + '\\i0\\par';
       
       const gradeInfo = [];
       if (edu.cgpa && edu.cgpaScale) gradeInfo.push(`CGPA: ${edu.cgpa}/${edu.cgpaScale}`);
@@ -184,34 +99,23 @@ const generateDocxContent = (
       if (edu.letterGrade) gradeInfo.push(`Grade: ${edu.letterGrade}`);
       
       if (gradeInfo.length > 0) {
-        content.push(
-          new Paragraph({
-            text: gradeInfo.join(' | '),
-          })
-        );
+        rtf += escapeRTF(gradeInfo.join(' | ')) + '\\par';
       }
       
       if (edu.description) {
         edu.description.split('\n').forEach(line => {
-          content.push(
-            new Paragraph({
-              text: `• ${line}`,
-            })
-          );
+          if (line.trim()) {
+            rtf += '\\bullet ' + escapeRTF(line) + '\\par';
+          }
         });
       }
-      content.push(new Paragraph({ text: "" }));
+      rtf += '\\par';
     });
   }
 
   // Skills
   if (data.skills.length > 0) {
-    content.push(
-      new Paragraph({
-        text: "Skills & Technologies",
-        heading: HeadingLevel.HEADING_1,
-      })
-    );
+    rtf += '\\ql\\b\\fs28 Skills & Technologies\\b0\\fs24\\par';
     
     const skillsByCategory = data.skills.reduce((acc, skill) => {
       if (!acc[skill.category]) acc[skill.category] = [];
@@ -220,69 +124,40 @@ const generateDocxContent = (
     }, {} as Record<string, typeof data.skills>);
     
     Object.entries(skillsByCategory).forEach(([category, categorySkills]) => {
-      content.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: category, bold: true }),
-          ],
-        })
-      );
-      content.push(
-        new Paragraph({
-          text: categorySkills.map(skill => `${skill.name} (${skill.level})`).join(', '),
-        })
-      );
-      content.push(new Paragraph({ text: "" }));
+      rtf += '\\b ' + escapeRTF(category) + '\\b0\\par';
+      rtf += escapeRTF(categorySkills.map(skill => `${skill.name} (${skill.level})`).join(', ')) + '\\par\\par';
     });
   }
 
   // Certificates
   if (data.certificates.length > 0) {
-    content.push(
-      new Paragraph({
-        text: "Certifications",
-        heading: HeadingLevel.HEADING_1,
-      })
-    );
+    rtf += '\\ql\\b\\fs28 Certifications\\b0\\fs24\\par';
     
     data.certificates.forEach(cert => {
-      content.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: cert.name, bold: true }),
-          ],
-        })
-      );
-      content.push(
-        new Paragraph({
-          text: cert.issuer,
-        })
-      );
+      rtf += '\\b ' + escapeRTF(cert.name) + '\\b0\\par';
+      rtf += escapeRTF(cert.issuer) + '\\par';
+      
       const dateText = [];
       if (cert.issueDate) dateText.push(formatDate(cert.issueDate));
       if (cert.expiryDate) dateText.push(formatDate(cert.expiryDate));
       if (dateText.length > 0) {
-        content.push(
-          new Paragraph({
-            children: [
-              new TextRun({ 
-                text: dateText.join(' - '),
-                italics: true 
-              }),
-            ],
-          })
-        );
+        rtf += '\\i ' + escapeRTF(dateText.join(' - ')) + '\\i0\\par';
       }
       if (cert.url) {
-        content.push(
-          new Paragraph({
-            text: `Certificate URL: ${cert.url}`,
-          })
-        );
+        rtf += escapeRTF(`Certificate URL: ${cert.url}`) + '\\par';
       }
-      content.push(new Paragraph({ text: "" }));
+      rtf += '\\par';
     });
   }
 
-  return content;
+  rtf += '}';
+  return rtf;
+};
+
+const escapeRTF = (text: string) => {
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    .replace(/\n/g, '\\par');
 };
