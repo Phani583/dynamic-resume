@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Star, Download, File } from 'lucide-react';
+import { FileText, Star, Download, File, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
@@ -7,9 +7,11 @@ interface NavigationProps {
   onDownload: () => void;
   onDownloadDocx: () => void;
   isDownloading: boolean;
+  isEditMode?: boolean;
+  onEditModeToggle?: () => void;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ onDownload, onDownloadDocx, isDownloading }) => {
+const Navigation: React.FC<NavigationProps> = ({ onDownload, onDownloadDocx, isDownloading, isEditMode = false, onEditModeToggle }) => {
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,6 +33,17 @@ const Navigation: React.FC<NavigationProps> = ({ onDownload, onDownloadDocx, isD
               <Star className="w-4 h-4 text-warning" />
               <span className="text-sm">Create stunning resumes in minutes</span>
             </div>
+            
+            {onEditModeToggle && (
+              <Button 
+                onClick={onEditModeToggle}
+                variant={isEditMode ? "default" : "outline"}
+                size="sm"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                {isEditMode ? "Exit Edit" : "Edit Preview"}
+              </Button>
+            )}
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

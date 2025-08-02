@@ -101,6 +101,7 @@ const Index = () => {
   });
 
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // Update customization when theme changes
   useEffect(() => {
@@ -253,6 +254,8 @@ const Index = () => {
         onDownload={triggerDownload}
         onDownloadDocx={triggerDownloadDocx}
         isDownloading={isDownloading}
+        isEditMode={isEditMode}
+        onEditModeToggle={() => setIsEditMode(!isEditMode)}
       />
 
       {/* Main Content */}
@@ -283,6 +286,8 @@ const Index = () => {
                 data={resumeData}
                 customization={customization}
                 theme={currentTheme}
+                isEditMode={isEditMode}
+                onDataChange={setResumeData}
               />
             </div>
           </div>

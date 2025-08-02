@@ -18,10 +18,34 @@ interface ResumePreviewProps {
   data: ResumeData;
   customization: CustomizationOptions;
   theme: ResumeTheme;
+  isEditMode?: boolean;
+  onDataChange?: (data: ResumeData) => void;
 }
 
-const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, theme }) => {
+const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, theme, isEditMode = false, onDataChange }) => {
   const colors = customization.colors;
+
+  // Helper function to handle contentEditable updates
+  const updateField = (path: string[], value: string) => {
+    if (!onDataChange) return;
+    
+    const newData = { ...data };
+    let current: any = newData;
+    
+    for (let i = 0; i < path.length - 1; i++) {
+      current = current[path[i]];
+    }
+    
+    current[path[path.length - 1]] = value;
+    onDataChange(newData);
+  };
+
+  // Handle contentEditable blur events
+  const handleBlur = (e: React.FocusEvent<HTMLElement>, path: string[]) => {
+    if (!isEditMode) return;
+    const value = e.currentTarget.textContent || '';
+    updateField(path, value);
+  };
   
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
@@ -84,34 +108,58 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
           )}
           <div className="flex-1">
             <h1 
-              className="text-3xl font-bold mb-2" 
+              className={`text-3xl font-bold mb-2 ${isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}`}
               style={{ 
                 color: colors.primary,
                 fontFamily: customization.sections.contact?.fontFamily || theme.fontFamily
               }}
+              contentEditable={isEditMode}
+              suppressContentEditableWarning={true}
+              onBlur={(e) => handleBlur(e, ['personalInfo', 'fullName'])}
             >
               {data.personalInfo.fullName}
             </h1>
             
             <div className="flex flex-wrap items-center gap-4 text-sm" style={{ color: colors.secondary }}>
-              {data.personalInfo.email && (
-                <div className="flex items-center gap-1">
-                  <Mail className="w-4 h-4" />
-                  {data.personalInfo.email}
-                </div>
-              )}
-              {data.personalInfo.phone && (
-                <div className="flex items-center gap-1">
-                  <Phone className="w-4 h-4" />
-                  {data.personalInfo.phone}
-                </div>
-              )}
-              {data.personalInfo.location && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  {data.personalInfo.location}
-                </div>
-              )}
+               {data.personalInfo.email && (
+                 <div className="flex items-center gap-1">
+                   <Mail className="w-4 h-4" />
+                   <span 
+                     className={isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}
+                     contentEditable={isEditMode}
+                     suppressContentEditableWarning={true}
+                     onBlur={(e) => handleBlur(e, ['personalInfo', 'email'])}
+                   >
+                     {data.personalInfo.email}
+                   </span>
+                 </div>
+               )}
+               {data.personalInfo.phone && (
+                 <div className="flex items-center gap-1">
+                   <Phone className="w-4 h-4" />
+                   <span 
+                     className={isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}
+                     contentEditable={isEditMode}
+                     suppressContentEditableWarning={true}
+                     onBlur={(e) => handleBlur(e, ['personalInfo', 'phone'])}
+                   >
+                     {data.personalInfo.phone}
+                   </span>
+                 </div>
+               )}
+               {data.personalInfo.location && (
+                 <div className="flex items-center gap-1">
+                   <MapPin className="w-4 h-4" />
+                   <span 
+                     className={isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}
+                     contentEditable={isEditMode}
+                     suppressContentEditableWarning={true}
+                     onBlur={(e) => handleBlur(e, ['personalInfo', 'location'])}
+                   >
+                     {data.personalInfo.location}
+                   </span>
+                 </div>
+               )}
             </div>
 
             {/* Public Links */}
@@ -182,7 +230,14 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
         {data.personalInfo.summary && renderSection(
           'Professional Summary',
           'summary',
-          <p className="leading-relaxed">{data.personalInfo.summary}</p>
+           <p 
+             className={`leading-relaxed ${isEditMode ? 'border border-dashed border-blue-300 rounded p-2 hover:bg-blue-50 focus:outline-none focus:bg-blue-50 min-h-[2rem]' : ''}`}
+             contentEditable={isEditMode}
+             suppressContentEditableWarning={true}
+             onBlur={(e) => handleBlur(e, ['personalInfo', 'summary'])}
+           >
+             {data.personalInfo.summary}
+           </p>
         )}
 
         {/* Experience */}
