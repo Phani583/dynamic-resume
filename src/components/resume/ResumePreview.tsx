@@ -1,5 +1,8 @@
 import React from 'react';
 import { ResumeData, CustomizationOptions, ResumeTheme } from './types';
+import EditableText from './EditableText';
+import EditableSection from './EditableSection';
+import ImageUpload from './ImageUpload';
 import { 
   User, 
   Mail, 
@@ -11,7 +14,8 @@ import {
   Calendar,
   Briefcase,
   GraduationCap,
-  Award
+  Award,
+  Plus
 } from 'lucide-react';
 
 interface ResumePreviewProps {
@@ -25,8 +29,8 @@ interface ResumePreviewProps {
 const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, theme, isEditMode = false, onDataChange }) => {
   const colors = customization.colors;
 
-  // Helper function to handle contentEditable updates
-  const updateField = (path: string[], value: string) => {
+  // Helper function to handle field updates
+  const updateField = (path: string[], value: any) => {
     if (!onDataChange) return;
     
     const newData = { ...data };
@@ -40,11 +44,44 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
     onDataChange(newData);
   };
 
-  // Handle contentEditable blur events
-  const handleBlur = (e: React.FocusEvent<HTMLElement>, path: string[]) => {
-    if (!isEditMode) return;
-    const value = e.currentTarget.textContent || '';
-    updateField(path, value);
+  // Add new item to array
+  const addArrayItem = (arrayPath: string, newItem: any) => {
+    if (!onDataChange) return;
+    
+    const newData = { ...data };
+    const array = arrayPath.split('.').reduce((obj, key) => obj[key], newData) as any[];
+    array.push({ ...newItem, id: Date.now().toString() });
+    onDataChange(newData);
+  };
+
+  // Remove item from array
+  const removeArrayItem = (arrayPath: string, id: string) => {
+    if (!onDataChange) return;
+    
+    const newData = { ...data };
+    const array = arrayPath.split('.').reduce((obj, key) => obj[key], newData) as any[];
+    const index = array.findIndex(item => item.id === id);
+    if (index > -1) {
+      array.splice(index, 1);
+      onDataChange(newData);
+    }
+  };
+
+  // Move item in array
+  const moveArrayItem = (arrayPath: string, id: string, direction: 'up' | 'down') => {
+    if (!onDataChange) return;
+    
+    const newData = { ...data };
+    const array = arrayPath.split('.').reduce((obj, key) => obj[key], newData) as any[];
+    const index = array.findIndex(item => item.id === id);
+    
+    if (index === -1) return;
+    
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= array.length) return;
+    
+    [array[index], array[newIndex]] = [array[newIndex], array[index]];
+    onDataChange(newData);
   };
   
   const formatDate = (dateString: string) => {
@@ -98,96 +135,104 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
     return (
       <div className={`mb-8 ${alignmentClass}`}>
         <div className="flex items-center justify-center gap-6 mb-4">
-          {data.personalInfo.profileImage && (
-            <img
-              src={data.personalInfo.profileImage}
-              alt="Profile"
-              className="w-20 h-20 rounded-full object-cover border-2"
-              style={{ borderColor: colors.primary }}
-            />
-          )}
+          <ImageUpload
+            currentImage={data.personalInfo.profileImage}
+            onImageChange={(imageUrl) => updateField(['personalInfo', 'profileImage'], imageUrl)}
+            isEditMode={isEditMode}
+          />
           <div className="flex-1">
             <h1 
-              className={`text-3xl font-bold mb-2 ${isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}`}
+              className="text-3xl font-bold mb-2"
               style={{ 
                 color: colors.primary,
                 fontFamily: customization.sections.contact?.fontFamily || theme.fontFamily
               }}
-              contentEditable={isEditMode}
-              suppressContentEditableWarning={true}
-              onBlur={(e) => handleBlur(e, ['personalInfo', 'fullName'])}
             >
-              {data.personalInfo.fullName}
+              <EditableText
+                value={data.personalInfo.fullName}
+                onChange={(value) => updateField(['personalInfo', 'fullName'], value)}
+                isEditMode={isEditMode}
+                placeholder="Your Name"
+                className="text-3xl font-bold"
+                style={{ 
+                  color: colors.primary,
+                  fontFamily: customization.sections.contact?.fontFamily || theme.fontFamily
+                }}
+              />
             </h1>
             
             <div className="flex flex-wrap items-center gap-4 text-sm" style={{ color: colors.secondary }}>
-               {data.personalInfo.email && (
-                 <div className="flex items-center gap-1">
-                   <Mail className="w-4 h-4" />
-                   <span 
-                     className={isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}
-                     contentEditable={isEditMode}
-                     suppressContentEditableWarning={true}
-                     onBlur={(e) => handleBlur(e, ['personalInfo', 'email'])}
-                   >
-                     {data.personalInfo.email}
-                   </span>
-                 </div>
-               )}
-               {data.personalInfo.phone && (
-                 <div className="flex items-center gap-1">
-                   <Phone className="w-4 h-4" />
-                   <span 
-                     className={isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}
-                     contentEditable={isEditMode}
-                     suppressContentEditableWarning={true}
-                     onBlur={(e) => handleBlur(e, ['personalInfo', 'phone'])}
-                   >
-                     {data.personalInfo.phone}
-                   </span>
-                 </div>
-               )}
-               {data.personalInfo.location && (
-                 <div className="flex items-center gap-1">
-                   <MapPin className="w-4 h-4" />
-                   <span 
-                     className={isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}
-                     contentEditable={isEditMode}
-                     suppressContentEditableWarning={true}
-                     onBlur={(e) => handleBlur(e, ['personalInfo', 'location'])}
-                   >
-                     {data.personalInfo.location}
-                   </span>
-                 </div>
-               )}
+               <div className="flex items-center gap-1">
+                 <Mail className="w-4 h-4" />
+                 <EditableText
+                   value={data.personalInfo.email}
+                   onChange={(value) => updateField(['personalInfo', 'email'], value)}
+                   isEditMode={isEditMode}
+                   placeholder="your.email@example.com"
+                 />
+               </div>
+               <div className="flex items-center gap-1">
+                 <Phone className="w-4 h-4" />
+                 <EditableText
+                   value={data.personalInfo.phone}
+                   onChange={(value) => updateField(['personalInfo', 'phone'], value)}
+                   isEditMode={isEditMode}
+                   placeholder="+1 (555) 123-4567"
+                 />
+               </div>
+               <div className="flex items-center gap-1">
+                 <MapPin className="w-4 h-4" />
+                 <EditableText
+                   value={data.personalInfo.location}
+                   onChange={(value) => updateField(['personalInfo', 'location'], value)}
+                   isEditMode={isEditMode}
+                   placeholder="City, State"
+                 />
+               </div>
             </div>
 
             {/* Public Links */}
             <div className="flex flex-wrap items-center gap-4 mt-2 text-sm">
-              {data.publicLinks.github && (
-                <a href={data.publicLinks.github} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
-                  <Github className="w-4 h-4" />
-                  {data.publicLinks.github}
-                </a>
-              )}
-              {data.publicLinks.linkedin && (
-                <a href={data.publicLinks.linkedin} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
-                  <Linkedin className="w-4 h-4" />
-                  {data.publicLinks.linkedin}
-                </a>
-              )}
-              {data.publicLinks.portfolio && (
-                <a href={data.publicLinks.portfolio} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
-                  <Globe className="w-4 h-4" />
-                  {data.publicLinks.portfolio}
-                </a>
-              )}
-              {data.publicLinks.website && (
-                <a href={data.publicLinks.website} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
-                  <Globe className="w-4 h-4" />
-                  {data.publicLinks.website}
-                </a>
-              )}
+              <div className="flex items-center gap-1">
+                <Github className="w-4 h-4" />
+                <EditableText
+                  value={data.publicLinks.github}
+                  onChange={(value) => updateField(['publicLinks', 'github'], value)}
+                  isEditMode={isEditMode}
+                  placeholder="GitHub URL"
+                  style={{ color: colors.accent }}
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <Linkedin className="w-4 h-4" />
+                <EditableText
+                  value={data.publicLinks.linkedin}
+                  onChange={(value) => updateField(['publicLinks', 'linkedin'], value)}
+                  isEditMode={isEditMode}
+                  placeholder="LinkedIn URL"
+                  style={{ color: colors.accent }}
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <Globe className="w-4 h-4" />
+                <EditableText
+                  value={data.publicLinks.portfolio}
+                  onChange={(value) => updateField(['publicLinks', 'portfolio'], value)}
+                  isEditMode={isEditMode}
+                  placeholder="Portfolio URL"
+                  style={{ color: colors.accent }}
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <Globe className="w-4 h-4" />
+                <EditableText
+                  value={data.publicLinks.website}
+                  onChange={(value) => updateField(['publicLinks', 'website'], value)}
+                  isEditMode={isEditMode}
+                  placeholder="Website URL"
+                  style={{ color: colors.accent }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -227,68 +272,179 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
       
       <div className={getSpacingClass()}>
         {/* Summary */}
-        {data.personalInfo.summary && renderSection(
+        {(data.personalInfo.summary || isEditMode) && renderSection(
           'Professional Summary',
           'summary',
-           <p 
-             className={`leading-relaxed ${isEditMode ? 'border border-dashed border-blue-300 rounded p-2 hover:bg-blue-50 focus:outline-none focus:bg-blue-50 min-h-[2rem]' : ''}`}
-             contentEditable={isEditMode}
-             suppressContentEditableWarning={true}
-             onBlur={(e) => handleBlur(e, ['personalInfo', 'summary'])}
-           >
-             {data.personalInfo.summary}
-           </p>
+          <EditableText
+            value={data.personalInfo.summary}
+            onChange={(value) => updateField(['personalInfo', 'summary'], value)}
+            isEditMode={isEditMode}
+            multiline
+            placeholder="Write a brief professional summary about yourself..."
+            className="leading-relaxed w-full"
+          />
         )}
 
         {/* Experience */}
-        {data.experience.length > 0 && renderSection(
+        {(data.experience.length > 0 || isEditMode) && renderSection(
           'Professional Experience',
           'experience',
           <div className="space-y-4">
-            {data.experience.map((exp) => (
-              <div key={exp.id}>
+            {data.experience.map((exp, index) => (
+              <EditableSection
+                key={exp.id}
+                isEditMode={isEditMode}
+                onDelete={() => removeArrayItem('experience', exp.id)}
+                onMoveUp={index > 0 ? () => moveArrayItem('experience', exp.id, 'up') : undefined}
+                onMoveDown={index < data.experience.length - 1 ? () => moveArrayItem('experience', exp.id, 'down') : undefined}
+                canMoveUp={index > 0}
+                canMoveDown={index < data.experience.length - 1}
+                className="border-l-2 border-transparent hover:border-blue-200 pl-2"
+              >
                 <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-semibold text-lg">{exp.jobTitle}</h3>
-                    <p className="font-medium" style={{ color: colors.secondary }}>{exp.company}</p>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">
+                      <EditableText
+                        value={exp.jobTitle}
+                        onChange={(value) => {
+                          const newExp = [...data.experience];
+                          newExp[index] = { ...exp, jobTitle: value };
+                          updateField(['experience'], newExp);
+                        }}
+                        isEditMode={isEditMode}
+                        placeholder="Job Title"
+                        className="font-semibold text-lg"
+                      />
+                    </h3>
+                    <p className="font-medium" style={{ color: colors.secondary }}>
+                      <EditableText
+                        value={exp.company}
+                        onChange={(value) => {
+                          const newExp = [...data.experience];
+                          newExp[index] = { ...exp, company: value };
+                          updateField(['experience'], newExp);
+                        }}
+                        isEditMode={isEditMode}
+                        placeholder="Company Name"
+                        className="font-medium"
+                        style={{ color: colors.secondary }}
+                      />
+                    </p>
                   </div>
                   <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
                     <Calendar className="h-3 w-3" />
                     {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
                   </div>
                 </div>
-                {exp.description && (
-                  <div className="text-sm leading-relaxed">
-                    {exp.description.split('\n').map((line, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <span className="mt-1">{getBulletStyle('experience')}</span>
-                        <span>{line}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                <div className="text-sm leading-relaxed">
+                  <EditableText
+                    value={exp.description}
+                    onChange={(value) => {
+                      const newExp = [...data.experience];
+                      newExp[index] = { ...exp, description: value };
+                      updateField(['experience'], newExp);
+                    }}
+                    isEditMode={isEditMode}
+                    multiline
+                    placeholder="Describe your responsibilities and achievements..."
+                    className="text-sm leading-relaxed w-full"
+                  />
+                </div>
+              </EditableSection>
             ))}
+            {isEditMode && (
+              <EditableSection
+                isEditMode={isEditMode}
+                onAdd={() => addArrayItem('experience', {
+                  jobTitle: '',
+                  company: '',
+                  startDate: '',
+                  endDate: '',
+                  current: false,
+                  description: ''
+                })}
+              >
+                <div className="text-center py-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 cursor-pointer"
+                     onClick={() => addArrayItem('experience', {
+                       jobTitle: '',
+                       company: '',
+                       startDate: '',
+                       endDate: '',
+                       current: false,
+                       description: ''
+                     })}>
+                  <Plus className="h-6 w-6 mx-auto mb-2 text-gray-400" />
+                  <p className="text-gray-500">Add Experience</p>
+                </div>
+              </EditableSection>
+            )}
           </div>
         )}
 
         {/* Education */}
-        {data.education.length > 0 && renderSection(
+        {(data.education.length > 0 || isEditMode) && renderSection(
           'Education',
           'education',
           <div className="space-y-4">
-            {data.education.map((edu) => (
-              <div key={edu.id}>
+            {data.education.map((edu, index) => (
+              <EditableSection
+                key={edu.id}
+                isEditMode={isEditMode}
+                onDelete={() => removeArrayItem('education', edu.id)}
+                onMoveUp={index > 0 ? () => moveArrayItem('education', edu.id, 'up') : undefined}
+                onMoveDown={index < data.education.length - 1 ? () => moveArrayItem('education', edu.id, 'down') : undefined}
+                canMoveUp={index > 0}
+                canMoveDown={index < data.education.length - 1}
+                className="border-l-2 border-transparent hover:border-blue-200 pl-2"
+              >
                 <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-semibold">{edu.degree}</h3>
-                    <p style={{ color: colors.secondary }}>{edu.school}</p>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">
+                      <EditableText
+                        value={edu.degree}
+                        onChange={(value) => {
+                          const newEdu = [...data.education];
+                          newEdu[index] = { ...edu, degree: value };
+                          updateField(['education'], newEdu);
+                        }}
+                        isEditMode={isEditMode}
+                        placeholder="Degree"
+                        className="font-semibold"
+                      />
+                    </h3>
+                    <p style={{ color: colors.secondary }}>
+                      <EditableText
+                        value={edu.school}
+                        onChange={(value) => {
+                          const newEdu = [...data.education];
+                          newEdu[index] = { ...edu, school: value };
+                          updateField(['education'], newEdu);
+                        }}
+                        isEditMode={isEditMode}
+                        placeholder="School/University"
+                        style={{ color: colors.secondary }}
+                      />
+                    </p>
                     {/* Academic Performance */}
-                    {(edu.cgpa || edu.percentage || edu.letterGrade) && (
-                      <div className="text-sm mt-1" style={{ color: colors.secondary }}>
-                        {edu.cgpa && edu.cgpaScale && <span>CGPA: {edu.cgpa}/{edu.cgpaScale}</span>}
-                        {edu.percentage && <span>{edu.cgpa ? ' | ' : ''}Percentage: {edu.percentage}</span>}
-                        {edu.letterGrade && <span>{(edu.cgpa || edu.percentage) ? ' | ' : ''}Grade: {edu.letterGrade}</span>}
+                    {(edu.cgpa || edu.percentage || edu.letterGrade || isEditMode) && (
+                      <div className="text-sm mt-1 flex gap-2" style={{ color: colors.secondary }}>
+                        <EditableText
+                          value={edu.cgpa ? `CGPA: ${edu.cgpa}/${edu.cgpaScale || '10'}` : ''}
+                          onChange={(value) => {
+                            const match = value.match(/CGPA: ([0-9.]+)\/([0-9.]+)/);
+                            const newEdu = [...data.education];
+                            newEdu[index] = { 
+                              ...edu, 
+                              cgpa: match ? match[1] : '',
+                              cgpaScale: match ? match[2] : ''
+                            };
+                            updateField(['education'], newEdu);
+                          }}
+                          isEditMode={isEditMode}
+                          placeholder="CGPA: 8.5/10"
+                          className="text-sm"
+                          style={{ color: colors.secondary }}
+                        />
                       </div>
                     )}
                   </div>
@@ -296,55 +452,128 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
                     {edu.startYear} - {edu.current ? 'Present' : edu.endYear}
                   </div>
                 </div>
-                {edu.description && (
+                {(edu.description || isEditMode) && (
                   <div className="text-sm leading-relaxed">
-                    {edu.description.split('\n').map((line, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <span className="mt-1">{getBulletStyle('education')}</span>
-                        <span>{line}</span>
-                      </div>
-                    ))}
+                    <EditableText
+                      value={edu.description || ''}
+                      onChange={(value) => {
+                        const newEdu = [...data.education];
+                        newEdu[index] = { ...edu, description: value };
+                        updateField(['education'], newEdu);
+                      }}
+                      isEditMode={isEditMode}
+                      multiline
+                      placeholder="Additional details about your education..."
+                      className="text-sm leading-relaxed w-full"
+                    />
                   </div>
                 )}
-              </div>
+              </EditableSection>
             ))}
+            {isEditMode && (
+              <EditableSection
+                isEditMode={isEditMode}
+                onAdd={() => addArrayItem('education', {
+                  degree: '',
+                  school: '',
+                  startYear: '',
+                  endYear: '',
+                  current: false,
+                  description: ''
+                })}
+              >
+                <div className="text-center py-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 cursor-pointer"
+                     onClick={() => addArrayItem('education', {
+                       degree: '',
+                       school: '',
+                       startYear: '',
+                       endYear: '',
+                       current: false,
+                       description: ''
+                     })}>
+                  <Plus className="h-6 w-6 mx-auto mb-2 text-gray-400" />
+                  <p className="text-gray-500">Add Education</p>
+                </div>
+              </EditableSection>
+            )}
           </div>
         )}
 
         {/* Skills */}
-        {data.skills.length > 0 && renderSection(
+        {(data.skills.length > 0 || isEditMode) && renderSection(
           'Skills & Technologies',
           'skills',
           <div className="space-y-3">
-            {Object.entries(
-              data.skills.reduce((acc, skill) => {
-                if (!acc[skill.category]) acc[skill.category] = [];
-                acc[skill.category].push(skill);
-                return acc;
-              }, {} as Record<string, typeof data.skills>)
-            ).map(([category, categorySkills]) => (
-              <div key={category}>
-                <h4 className="text-sm font-semibold mb-2" style={{ color: colors.secondary }}>
-                  {category}
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {categorySkills.map((skill, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 rounded-full text-sm font-medium"
-                      style={{
-                        backgroundColor: colors.accent + '20',
-                        color: colors.accent,
-                        border: `1px solid ${colors.accent}40`
-                      }}
-                    >
-                      <span className="font-medium">{skill.name}</span>
-                      <span className="text-xs opacity-75 ml-1">({skill.level})</span>
-                    </span>
-                  ))}
+            {data.skills.map((skill, index) => (
+              <EditableSection
+                key={skill.id}
+                isEditMode={isEditMode}
+                onDelete={() => removeArrayItem('skills', skill.id)}
+                onMoveUp={index > 0 ? () => moveArrayItem('skills', skill.id, 'up') : undefined}
+                onMoveDown={index < data.skills.length - 1 ? () => moveArrayItem('skills', skill.id, 'down') : undefined}
+                canMoveUp={index > 0}
+                canMoveDown={index < data.skills.length - 1}
+                className="border-l-2 border-transparent hover:border-blue-200 pl-2"
+              >
+                <div className="flex gap-2 items-center">
+                  <EditableText
+                    value={skill.name}
+                    onChange={(value) => {
+                      const newSkills = [...data.skills];
+                      newSkills[index] = { ...skill, name: value };
+                      updateField(['skills'], newSkills);
+                    }}
+                    isEditMode={isEditMode}
+                    placeholder="Skill name"
+                    className="font-medium"
+                  />
+                  <EditableText
+                    value={skill.category}
+                    onChange={(value) => {
+                      const newSkills = [...data.skills];
+                      newSkills[index] = { ...skill, category: value };
+                      updateField(['skills'], newSkills);
+                    }}
+                    isEditMode={isEditMode}
+                    placeholder="Category"
+                    className="text-sm"
+                    style={{ color: colors.secondary }}
+                  />
+                  <EditableText
+                    value={skill.level}
+                    onChange={(value) => {
+                      const newSkills = [...data.skills];
+                      newSkills[index] = { ...skill, level: value as any };
+                      updateField(['skills'], newSkills);
+                    }}
+                    isEditMode={isEditMode}
+                    placeholder="Level"
+                    className="text-xs"
+                    style={{ color: colors.accent }}
+                  />
                 </div>
-              </div>
+              </EditableSection>
             ))}
+            {isEditMode && (
+              <EditableSection
+                isEditMode={isEditMode}
+                onAdd={() => addArrayItem('skills', {
+                  name: '',
+                  category: '',
+                  level: 'Intermediate'
+                })}
+              >
+                <div className="text-center py-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 cursor-pointer"
+                     onClick={() => addArrayItem('skills', {
+                       name: '',
+                       category: '',
+                       level: 'Intermediate'
+                     })}>
+                  <Plus className="h-6 w-6 mx-auto mb-2 text-gray-400" />
+                  <p className="text-gray-500">Add Skill</p>
+                </div>
+              </EditableSection>
+            )}
           </div>
         )}
 
