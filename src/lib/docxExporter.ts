@@ -214,7 +214,7 @@ const generateRTFContent = (
       
       // Academic performance section (matching preview exactly)
       const gradeInfo = [];
-      if (edu.cgpa && edu.cgpaScale) gradeInfo.push(`CGPA: ${edu.cgpa}/${edu.cgpaScale}`);
+      if (edu.cgpa) gradeInfo.push(`CGPA: ${edu.cgpa}`);
       if (edu.percentage) gradeInfo.push(`Percentage: ${edu.percentage}%`);
       if (edu.letterGrade) gradeInfo.push(`Grade: ${edu.letterGrade}`);
       

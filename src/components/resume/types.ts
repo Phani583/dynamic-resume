@@ -21,6 +21,7 @@ export interface ResumeData {
     endDate: string;
     current: boolean;
     description: string;
+    keyResponsibilities: string;
   }>;
   education: Array<{
     id: string;
@@ -30,7 +31,6 @@ export interface ResumeData {
     endYear: string;
     current: boolean;
     cgpa?: string;
-    cgpaScale?: string;
     percentage?: string;
     letterGrade?: string;
     description?: string;
@@ -49,6 +49,32 @@ export interface ResumeData {
     expiryDate?: string;
     url?: string;
   }>;
+  projects: Array<{
+    id: string;
+    name: string;
+    description: string;
+    technologies: string;
+    url?: string;
+    startDate: string;
+    endDate: string;
+    current: boolean;
+  }>;
+  additionalInfo: string;
+  hobbies: Array<{
+    id: string;
+    name: string;
+  }>;
+  declaration: {
+    enabled: boolean;
+    text: string;
+  };
+  signature: {
+    enabled: boolean;
+    name: string;
+    date: string;
+    location: string;
+    digitalSignature?: string;
+  };
 }
 
 export interface SectionCustomization {
@@ -57,6 +83,7 @@ export interface SectionCustomization {
   fontWeight: string;
   color: string;
   icon?: string;
+  customIcon?: string;
   bulletStyle?: string;
   dividerStyle?: string;
 }

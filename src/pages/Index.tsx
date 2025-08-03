@@ -31,7 +31,20 @@ const Index = () => {
     experience: [],
     education: [],
     skills: [],
-    certificates: []
+    certificates: [],
+    projects: [],
+    additionalInfo: '',
+    hobbies: [],
+    declaration: {
+      enabled: false,
+      text: 'I hereby declare that the information provided above is true to the best of my knowledge.'
+    },
+    signature: {
+      enabled: false,
+      name: '',
+      date: '',
+      location: ''
+    }
   });
 
   // Current theme

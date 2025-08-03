@@ -22,7 +22,12 @@ import {
   GraduationCap,
   Award,
   Sparkles,
-  Loader2
+  Loader2,
+  FolderOpen,
+  FileText,
+  Heart,
+  PenTool,
+  Signature
 } from 'lucide-react';
 import { ResumeData } from './types';
 import { initializeOpenAI, generateExperienceDescription, generateEducationDescription, generateSkillsSuggestions } from '@/lib/aiGenerator';
@@ -41,13 +46,20 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
   const { toast } = useToast();
 
   const handleInputChange = (section: keyof ResumeData, field: string, value: any) => {
-    onDataChange({
-      ...data,
-      [section]: {
-        ...data[section],
-        [field]: value
-      }
-    });
+    if (section === 'additionalInfo') {
+      onDataChange({
+        ...data,
+        additionalInfo: value
+      });
+    } else {
+      onDataChange({
+        ...data,
+        [section]: {
+          ...(data[section] as any),
+          [field]: value
+        }
+      });
+    }
   };
 
   const handleArrayItemChange = (section: keyof ResumeData, index: number, field: string, value: any) => {
@@ -471,7 +483,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
                       onChange={(e) => handleArrayItemChange('experience', index, 'current', e.target.checked)}
                       className="mr-2"
                     />
-                    <Label className="text-sm">Current Position</Label>
+                    <Label className="text-sm">Present</Label>
                   </div>
                 </div>
               </div>
@@ -500,6 +512,15 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
                   rows={3}
                 />
               </div>
+              <div>
+                <Label>Key Roles and Responsibilities</Label>
+                <Textarea
+                  value={exp.keyResponsibilities || ''}
+                  onChange={(e) => handleArrayItemChange('experience', index, 'keyResponsibilities', e.target.value)}
+                  placeholder="List your key roles and responsibilities..."
+                  rows={2}
+                />
+              </div>
             </div>
           ))}
           <Button
@@ -511,7 +532,8 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
                 startDate: '',
                 endDate: '',
                 current: false,
-                description: ''
+                description: '',
+                keyResponsibilities: ''
               })
             }
             className="w-full"
@@ -590,45 +612,35 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
               </div>
               
               {/* Academic Performance */}
-              <div className="border-t pt-4">
-                <Label className="text-sm font-medium mb-3 block">Academic Performance (Optional)</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-xs">CGPA</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={edu.cgpa || ''}
-                        onChange={(e) => handleArrayItemChange('education', index, 'cgpa', e.target.value)}
-                        placeholder="3.8"
-                        className="text-sm"
-                      />
-                      <Input
-                        value={edu.cgpaScale || ''}
-                        onChange={(e) => handleArrayItemChange('education', index, 'cgpaScale', e.target.value)}
-                        placeholder="4.0"
-                        className="text-sm w-16"
-                      />
-                    </div>
-                    <Label className="text-xs text-muted-foreground">CGPA / Scale</Label>
-                  </div>
-                  <div>
-                    <Label className="text-xs">Percentage</Label>
-                    <Input
-                      value={edu.percentage || ''}
-                      onChange={(e) => handleArrayItemChange('education', index, 'percentage', e.target.value)}
-                      placeholder="85%"
-                      className="text-sm"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Letter Grade</Label>
-                    <Input
-                      value={edu.letterGrade || ''}
-                      onChange={(e) => handleArrayItemChange('education', index, 'letterGrade', e.target.value)}
-                      placeholder="A"
-                      className="text-sm"
-                    />
-                  </div>
+               <div className="border-t pt-4">
+                 <Label className="text-sm font-medium mb-3 block">Academic Performance (Optional)</Label>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div>
+                     <Label className="text-xs">CGPA</Label>
+                     <Input
+                       value={edu.cgpa || ''}
+                       onChange={(e) => handleArrayItemChange('education', index, 'cgpa', e.target.value)}
+                       placeholder="3.8 / 4.0"
+                       className="text-sm"
+                     />
+                   </div>
+                   <div>
+                     <Label className="text-xs">Percentage/Letter Grade</Label>
+                     <div className="flex gap-2">
+                       <Input
+                         value={edu.percentage || ''}
+                         onChange={(e) => handleArrayItemChange('education', index, 'percentage', e.target.value)}
+                         placeholder="85%"
+                         className="text-sm"
+                       />
+                       <Input
+                         value={edu.letterGrade || ''}
+                         onChange={(e) => handleArrayItemChange('education', index, 'letterGrade', e.target.value)}
+                         placeholder="A"
+                         className="text-sm w-16"
+                       />
+                     </div>
+                   </div>
                 </div>
               </div>
               
@@ -667,13 +679,12 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
                 degree: '',
                 school: '',
                 startYear: '',
-                endYear: '',
-                current: false,
-                cgpa: '',
-                cgpaScale: '',
-                percentage: '',
-                letterGrade: '',
-                description: ''
+                 endYear: '',
+                 current: false,
+                 cgpa: '',
+                 percentage: '',
+                 letterGrade: '',
+                 description: ''
               })
             }
             className="w-full"
@@ -850,6 +861,295 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ data, onDataChange }) => {
             <Plus className="w-4 h-4 mr-2" />
             Add Certificate
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Projects & Internships */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FolderOpen className="w-5 h-5" />
+            Projects & Internships
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {data.projects.map((project, index) => (
+            <div key={project.id} className="p-4 border rounded-lg space-y-4">
+              <div className="flex justify-between items-start">
+                <h4 className="font-medium">Project {index + 1}</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => removeArrayItem('projects', index)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Project Name *</Label>
+                  <Input
+                    value={project.name}
+                    onChange={(e) => handleArrayItemChange('projects', index, 'name', e.target.value)}
+                    placeholder="E-commerce Website"
+                  />
+                </div>
+                <div>
+                  <Label>Technologies Used</Label>
+                  <Input
+                    value={project.technologies}
+                    onChange={(e) => handleArrayItemChange('projects', index, 'technologies', e.target.value)}
+                    placeholder="React, Node.js, MongoDB"
+                  />
+                </div>
+                <div>
+                  <Label>Start Date</Label>
+                  <Input
+                    type="date"
+                    value={project.startDate}
+                    onChange={(e) => handleArrayItemChange('projects', index, 'startDate', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>End Date</Label>
+                  <Input
+                    type="date"
+                    value={project.endDate}
+                    onChange={(e) => handleArrayItemChange('projects', index, 'endDate', e.target.value)}
+                    disabled={project.current}
+                  />
+                  <div className="flex items-center mt-2">
+                    <input
+                      type="checkbox"
+                      checked={project.current}
+                      onChange={(e) => handleArrayItemChange('projects', index, 'current', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <Label className="text-sm">Currently Working</Label>
+                  </div>
+                </div>
+                <div className="md:col-span-2">
+                  <Label>Project URL (Optional)</Label>
+                  <Input
+                    type="url"
+                    value={project.url || ''}
+                    onChange={(e) => handleArrayItemChange('projects', index, 'url', e.target.value)}
+                    placeholder="https://github.com/username/project"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  value={project.description}
+                  onChange={(e) => handleArrayItemChange('projects', index, 'description', e.target.value)}
+                  placeholder="Describe the project, your role, and key achievements..."
+                  rows={3}
+                />
+              </div>
+            </div>
+          ))}
+          <Button
+            onClick={() =>
+              addArrayItem('projects', {
+                id: Date.now().toString(),
+                name: '',
+                description: '',
+                technologies: '',
+                url: '',
+                startDate: '',
+                endDate: '',
+                current: false
+              })
+            }
+            className="w-full"
+            variant="outline"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Project
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Additional Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Additional Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div>
+            <Label htmlFor="additionalInfo">Additional Information</Label>
+            <Textarea
+              id="additionalInfo"
+              value={data.additionalInfo}
+              onChange={(e) => handleInputChange('additionalInfo', '', e.target.value)}
+              placeholder="Any additional information you'd like to include (awards, publications, volunteer work, etc.)..."
+              rows={4}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Hobbies */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Heart className="w-5 h-5" />
+            Hobbies & Interests
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            {data.hobbies.map((hobby, index) => (
+              <div key={hobby.id} className="flex items-center gap-2 p-2 border rounded">
+                <Input
+                  value={hobby.name}
+                  onChange={(e) => handleArrayItemChange('hobbies', index, 'name', e.target.value)}
+                  placeholder="Photography, Reading, etc."
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => removeArrayItem('hobbies', index)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <Button
+            onClick={() =>
+              addArrayItem('hobbies', {
+                id: Date.now().toString(),
+                name: ''
+              })
+            }
+            className="w-full"
+            variant="outline"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Hobby
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Declaration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <PenTool className="w-5 h-5" />
+            Declaration
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={data.declaration.enabled}
+              onChange={(e) => handleInputChange('declaration', 'enabled', e.target.checked)}
+              className="mr-2"
+            />
+            <Label>Include Declaration</Label>
+          </div>
+          {data.declaration.enabled && (
+            <div>
+              <Label>Declaration Text</Label>
+              <Textarea
+                value={data.declaration.text}
+                onChange={(e) => handleInputChange('declaration', 'text', e.target.value)}
+                placeholder="I hereby declare that the information provided above is true to the best of my knowledge."
+                rows={3}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Signature */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Signature className="w-5 h-5" />
+            Signature
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={data.signature.enabled}
+              onChange={(e) => handleInputChange('signature', 'enabled', e.target.checked)}
+              className="mr-2"
+            />
+            <Label>Include Signature Section</Label>
+          </div>
+          {data.signature.enabled && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Signature Name</Label>
+                <Input
+                  value={data.signature.name}
+                  onChange={(e) => handleInputChange('signature', 'name', e.target.value)}
+                  placeholder="Your Full Name"
+                />
+              </div>
+              <div>
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={data.signature.date}
+                  onChange={(e) => handleInputChange('signature', 'date', e.target.value)}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label>Location</Label>
+                <Input
+                  value={data.signature.location}
+                  onChange={(e) => handleInputChange('signature', 'location', e.target.value)}
+                  placeholder="City, Country"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label>Digital Signature (Optional)</Label>
+                <div className="flex items-center gap-4 mt-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          handleInputChange('signature', 'digitalSignature', event.target?.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="hidden"
+                    id="signature-upload"
+                  />
+                  <label htmlFor="signature-upload">
+                    <Button variant="outline" size="sm" className="cursor-pointer" asChild>
+                      <span>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Upload Signature
+                      </span>
+                    </Button>
+                  </label>
+                  {data.signature.digitalSignature && (
+                    <img
+                      src={data.signature.digitalSignature}
+                      alt="Digital Signature"
+                      className="h-12 object-contain border rounded"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

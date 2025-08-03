@@ -54,8 +54,10 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
   };
 
   const getSectionIcon = (sectionId: string) => {
-    const icon = customization.sections[sectionId]?.icon;
-    return icon || '';
+    const section = customization.sections[sectionId];
+    if (section?.customIcon) return section.customIcon;
+    if (section?.icon === 'none') return '';
+    return section?.icon || '';
   };
 
   const getBulletStyle = (sectionId: string) => {
@@ -257,16 +259,27 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
                     {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
                   </div>
                 </div>
-                {exp.description && (
-                  <div className="text-sm leading-relaxed">
-                    {exp.description.split('\n').map((line, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <span className="mt-1">{getBulletStyle('experience')}</span>
-                        <span>{line}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                 {exp.description && (
+                   <div className="text-sm leading-relaxed">
+                     {exp.description.split('\n').map((line, index) => (
+                       <div key={index} className="flex items-start gap-2">
+                         <span className="mt-1">{getBulletStyle('experience')}</span>
+                         <span>{line}</span>
+                       </div>
+                     ))}
+                   </div>
+                 )}
+                 {exp.keyResponsibilities && (
+                   <div className="text-sm leading-relaxed mt-2">
+                     <h4 className="font-medium text-xs uppercase tracking-wide mb-1" style={{ color: colors.secondary }}>Key Roles & Responsibilities:</h4>
+                     {exp.keyResponsibilities.split('\n').map((line, index) => (
+                       <div key={index} className="flex items-start gap-2">
+                         <span className="mt-1">{getBulletStyle('experience')}</span>
+                         <span>{line}</span>
+                       </div>
+                     ))}
+                   </div>
+                 )}
               </div>
             ))}
           </div>
@@ -286,8 +299,8 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
                     {/* Academic Performance */}
                     {(edu.cgpa || edu.percentage || edu.letterGrade) && (
                       <div className="text-sm mt-1" style={{ color: colors.secondary }}>
-                        {edu.cgpa && edu.cgpaScale && <span>CGPA: {edu.cgpa}/{edu.cgpaScale}</span>}
-                        {edu.percentage && <span>{edu.cgpa ? ' | ' : ''}Percentage: {edu.percentage}</span>}
+                        {edu.cgpa && <span>CGPA: {edu.cgpa}</span>}
+                        {edu.percentage && <span>{edu.cgpa ? ' | ' : ''}Percentage: {edu.percentage}%</span>}
                         {edu.letterGrade && <span>{(edu.cgpa || edu.percentage) ? ' | ' : ''}Grade: {edu.letterGrade}</span>}
                       </div>
                     )}
@@ -374,6 +387,110 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Projects */}
+        {data.projects.length > 0 && renderSection(
+          'Projects & Internships',
+          'projects',
+          <div className="space-y-4">
+            {data.projects.map((project) => (
+              <div key={project.id}>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-semibold text-lg">{project.name}</h3>
+                    <p className="font-medium text-sm" style={{ color: colors.secondary }}>{project.technologies}</p>
+                  </div>
+                  <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
+                    <Calendar className="h-3 w-3" />
+                    {formatDate(project.startDate)} - {project.current ? 'Present' : formatDate(project.endDate)}
+                  </div>
+                </div>
+                {project.description && (
+                  <div className="text-sm leading-relaxed mb-2">
+                    {project.description.split('\n').map((line, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <span className="mt-1">{getBulletStyle('projects')}</span>
+                        <span>{line}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {project.url && (
+                  <div className="text-sm">
+                    <a href={project.url} className="hover:underline" style={{ color: colors.accent }}>
+                      View Project
+                    </a>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Additional Information */}
+        {data.additionalInfo && renderSection(
+          'Additional Information',
+          'additionalInfo',
+          <div className="text-sm leading-relaxed">
+            {data.additionalInfo.split('\n').map((line, index) => (
+              <p key={index} className="mb-2">{line}</p>
+            ))}
+          </div>
+        )}
+
+        {/* Hobbies */}
+        {data.hobbies.length > 0 && renderSection(
+          'Hobbies & Interests',
+          'hobbies',
+          <div className="flex flex-wrap gap-2">
+            {data.hobbies.map((hobby, index) => (
+              <span
+                key={hobby.id}
+                className="px-3 py-1 rounded-full text-sm"
+                style={{
+                  backgroundColor: colors.secondary + '20',
+                  color: colors.secondary,
+                  border: `1px solid ${colors.secondary}40`
+                }}
+              >
+                {hobby.name}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Declaration */}
+        {data.declaration.enabled && renderSection(
+          'Declaration',
+          'declaration',
+          <div className="text-sm leading-relaxed">
+            <p>{data.declaration.text}</p>
+          </div>
+        )}
+
+        {/* Signature */}
+        {data.signature.enabled && renderSection(
+          'Signature',
+          'signature',
+          <div className="flex justify-between items-end">
+            <div>
+              {data.signature.digitalSignature && (
+                <img
+                  src={data.signature.digitalSignature}
+                  alt="Digital Signature"
+                  className="h-16 object-contain mb-2"
+                />
+              )}
+              <div className="text-sm">
+                <p className="font-medium">{data.signature.name}</p>
+                <p style={{ color: colors.secondary }}>{data.signature.date}</p>
+              </div>
+            </div>
+            <div className="text-sm text-right" style={{ color: colors.secondary }}>
+              <p>{data.signature.location}</p>
+            </div>
           </div>
         )}
       </div>

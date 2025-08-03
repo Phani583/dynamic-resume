@@ -37,7 +37,12 @@ const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
     { id: 'experience', name: 'Work Experience', icon: '💼' },
     { id: 'education', name: 'Education', icon: '🎓' },
     { id: 'skills', name: 'Skills', icon: '🛠️' },
-    { id: 'contact', name: 'Contact', icon: '📞' }
+    { id: 'contact', name: 'Contact', icon: '📞' },
+    { id: 'projects', name: 'Projects', icon: '🚀' },
+    { id: 'additionalInfo', name: 'Additional Info', icon: '📄' },
+    { id: 'hobbies', name: 'Hobbies', icon: '❤️' },
+    { id: 'declaration', name: 'Declaration', icon: '✍️' },
+    { id: 'signature', name: 'Signature', icon: '✏️' }
   ];
 
   const updateSectionCustomization = (sectionId: string, updates: Partial<SectionCustomization>) => {
@@ -241,22 +246,40 @@ const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
                 <div>
                   <Label className="text-xs">Section Icon</Label>
                   <div className="grid grid-cols-6 gap-2 mt-2">
+                    {/* None option */}
+                    <Button
+                      variant={customization.sections[selectedSection]?.icon === 'none' ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => updateSectionCustomization(selectedSection, { icon: 'none', customIcon: undefined })}
+                      className="p-2 text-xs"
+                    >
+                      None
+                    </Button>
                     {SECTION_ICONS[selectedSection as keyof typeof SECTION_ICONS]?.map((icon) => (
                       <Button
                         key={icon}
                         variant={customization.sections[selectedSection]?.icon === icon ? "default" : "outline"}
                         size="sm"
-                        onClick={() => updateSectionCustomization(selectedSection, { icon })}
+                        onClick={() => updateSectionCustomization(selectedSection, { icon, customIcon: undefined })}
                         className="p-2 text-sm"
                       >
                         {icon}
                       </Button>
-                    ))}
-                  </div>
-                </div>
+                     ))}
+                   </div>
+                   <div className="mt-2">
+                     <Label className="text-xs">Or use custom icon/emoji</Label>
+                     <Input
+                       value={customization.sections[selectedSection]?.customIcon || ''}
+                       onChange={(e) => updateSectionCustomization(selectedSection, { customIcon: e.target.value, icon: e.target.value ? 'custom' : undefined })}
+                       placeholder="Enter emoji or text (e.g., 🚀, •, ►)"
+                       className="mt-1 text-sm"
+                     />
+                   </div>
+                 </div>
 
-                <div>
-                  <Label className="text-xs">Bullet Style</Label>
+                 <div>
+                   <Label className="text-xs">Bullet Style</Label>
                   <div className="grid grid-cols-5 gap-2 mt-2">
                     {BULLET_STYLES.map((bullet) => (
                       <Button
