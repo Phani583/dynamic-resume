@@ -13,6 +13,10 @@ import {
   GraduationCap,
   Award
 } from 'lucide-react';
+import { LiveEditingProvider } from './LiveEditingProvider';
+import { EditableElement } from './EditableElement';
+import { EditableImage } from './EditableImage';
+import { EditableList } from './EditableList';
 
 interface ResumePreviewProps {
   data: ResumeData;
@@ -24,28 +28,6 @@ interface ResumePreviewProps {
 
 const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, theme, isEditMode = false, onDataChange }) => {
   const colors = customization.colors;
-
-  // Helper function to handle contentEditable updates
-  const updateField = (path: string[], value: string) => {
-    if (!onDataChange) return;
-    
-    const newData = { ...data };
-    let current: any = newData;
-    
-    for (let i = 0; i < path.length - 1; i++) {
-      current = current[path[i]];
-    }
-    
-    current[path[path.length - 1]] = value;
-    onDataChange(newData);
-  };
-
-  // Handle contentEditable blur events
-  const handleBlur = (e: React.FocusEvent<HTMLElement>, path: string[]) => {
-    if (!isEditMode) return;
-    const value = e.currentTarget.textContent || '';
-    updateField(path, value);
-  };
   
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
@@ -100,96 +82,81 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
     return (
       <div className={`mb-8 ${alignmentClass}`}>
         <div className="flex items-center justify-center gap-6 mb-4">
-          {data.personalInfo.profileImage && (
-            <img
-              src={data.personalInfo.profileImage}
-              alt="Profile"
-              className="w-20 h-20 rounded-full object-cover border-2"
-              style={{ borderColor: colors.primary }}
-            />
-          )}
+          <EditableImage
+            value={data.personalInfo.profileImage || ''}
+            path={['personalInfo', 'profileImage']}
+            width={80}
+            height={80}
+            shape="circle"
+            style={{ borderColor: colors.primary }}
+          />
+          
           <div className="flex-1">
-            <h1 
-              className={`text-3xl font-bold mb-2 ${isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}`}
+            <EditableElement
+              value={data.personalInfo.fullName}
+              path={['personalInfo', 'fullName']}
+              as="h1"
+              className="text-3xl font-bold mb-2"
               style={{ 
                 color: colors.primary,
                 fontFamily: customization.sections.contact?.fontFamily || theme.fontFamily
               }}
-              contentEditable={isEditMode}
-              suppressContentEditableWarning={true}
-              onBlur={(e) => handleBlur(e, ['personalInfo', 'fullName'])}
-            >
-              {data.personalInfo.fullName}
-            </h1>
+              placeholder="Your Full Name"
+            />
             
             <div className="flex flex-wrap items-center gap-4 text-sm" style={{ color: colors.secondary }}>
-               {data.personalInfo.email && (
-                 <div className="flex items-center gap-1">
-                   <Mail className="w-4 h-4" />
-                   <span 
-                     className={isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}
-                     contentEditable={isEditMode}
-                     suppressContentEditableWarning={true}
-                     onBlur={(e) => handleBlur(e, ['personalInfo', 'email'])}
-                   >
-                     {data.personalInfo.email}
-                   </span>
-                 </div>
-               )}
-               {data.personalInfo.phone && (
-                 <div className="flex items-center gap-1">
-                   <Phone className="w-4 h-4" />
-                   <span 
-                     className={isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}
-                     contentEditable={isEditMode}
-                     suppressContentEditableWarning={true}
-                     onBlur={(e) => handleBlur(e, ['personalInfo', 'phone'])}
-                   >
-                     {data.personalInfo.phone}
-                   </span>
-                 </div>
-               )}
-               {data.personalInfo.location && (
-                 <div className="flex items-center gap-1">
-                   <MapPin className="w-4 h-4" />
-                   <span 
-                     className={isEditMode ? 'border border-dashed border-blue-300 rounded px-1 hover:bg-blue-50 focus:outline-none focus:bg-blue-50' : ''}
-                     contentEditable={isEditMode}
-                     suppressContentEditableWarning={true}
-                     onBlur={(e) => handleBlur(e, ['personalInfo', 'location'])}
-                   >
-                     {data.personalInfo.location}
-                   </span>
-                 </div>
-               )}
+              <div className="flex items-center gap-1">
+                <Mail className="w-4 h-4" />
+                <EditableElement
+                  value={data.personalInfo.email}
+                  path={['personalInfo', 'email']}
+                  placeholder="your.email@example.com"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <Phone className="w-4 h-4" />
+                <EditableElement
+                  value={data.personalInfo.phone}
+                  path={['personalInfo', 'phone']}
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                <EditableElement
+                  value={data.personalInfo.location}
+                  path={['personalInfo', 'location']}
+                  placeholder="City, Country"
+                />
+              </div>
             </div>
 
             {/* Public Links */}
             <div className="flex flex-wrap items-center gap-4 mt-2 text-sm">
-              {data.publicLinks.github && (
-                <a href={data.publicLinks.github} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
-                  <Github className="w-4 h-4" />
-                  {data.publicLinks.github}
-                </a>
-              )}
-              {data.publicLinks.linkedin && (
-                <a href={data.publicLinks.linkedin} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
-                  <Linkedin className="w-4 h-4" />
-                  {data.publicLinks.linkedin}
-                </a>
-              )}
-              {data.publicLinks.portfolio && (
-                <a href={data.publicLinks.portfolio} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
-                  <Globe className="w-4 h-4" />
-                  {data.publicLinks.portfolio}
-                </a>
-              )}
-              {data.publicLinks.website && (
-                <a href={data.publicLinks.website} className="flex items-center gap-1 hover:underline" style={{ color: colors.accent }}>
-                  <Globe className="w-4 h-4" />
-                  {data.publicLinks.website}
-                </a>
-              )}
+              <div className="flex items-center gap-1" style={{ color: colors.accent }}>
+                <Github className="w-4 h-4" />
+                <EditableElement
+                  value={data.publicLinks.github}
+                  path={['publicLinks', 'github']}
+                  placeholder="github.com/username"
+                />
+              </div>
+              <div className="flex items-center gap-1" style={{ color: colors.accent }}>
+                <Linkedin className="w-4 h-4" />
+                <EditableElement
+                  value={data.publicLinks.linkedin}
+                  path={['publicLinks', 'linkedin']}
+                  placeholder="linkedin.com/in/username"
+                />
+              </div>
+              <div className="flex items-center gap-1" style={{ color: colors.accent }}>
+                <Globe className="w-4 h-4" />
+                <EditableElement
+                  value={data.publicLinks.portfolio}
+                  path={['publicLinks', 'portfolio']}
+                  placeholder="portfolio.com"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -229,60 +196,77 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
       
       <div className={getSpacingClass()}>
         {/* Summary */}
-        {data.personalInfo.summary && renderSection(
+        {renderSection(
           'Professional Summary',
           'summary',
-           <p 
-             className={`leading-relaxed ${isEditMode ? 'border border-dashed border-blue-300 rounded p-2 hover:bg-blue-50 focus:outline-none focus:bg-blue-50 min-h-[2rem]' : ''}`}
-             contentEditable={isEditMode}
-             suppressContentEditableWarning={true}
-             onBlur={(e) => handleBlur(e, ['personalInfo', 'summary'])}
-           >
-             {data.personalInfo.summary}
-           </p>
+          <EditableElement
+            value={data.personalInfo.summary}
+            path={['personalInfo', 'summary']}
+            multiline={true}
+            className="leading-relaxed"
+            placeholder="Write a compelling professional summary..."
+          />
         )}
 
         {/* Experience */}
-        {data.experience.length > 0 && renderSection(
+        {renderSection(
           'Professional Experience',
           'experience',
-          <div className="space-y-4">
-            {data.experience.map((exp) => (
-              <div key={exp.id}>
+          <EditableList
+            items={data.experience}
+            path={['experience']}
+            createNewItem={() => ({
+              id: Date.now().toString(),
+              jobTitle: '',
+              company: '',
+              startDate: '',
+              endDate: '',
+              current: false,
+              description: '',
+              keyResponsibilities: ''
+            })}
+            addButtonText="Add Experience"
+            renderItem={(exp, index) => (
+              <div>
                 <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-semibold text-lg">{exp.jobTitle}</h3>
-                    <p className="font-medium" style={{ color: colors.secondary }}>{exp.company}</p>
+                  <div className="flex-1">
+                    <EditableElement
+                      value={exp.jobTitle}
+                      path={['experience', index.toString(), 'jobTitle']}
+                      as="h3"
+                      className="font-semibold text-lg"
+                      placeholder="Job Title"
+                    />
+                    <EditableElement
+                      value={exp.company}
+                      path={['experience', index.toString(), 'company']}
+                      className="font-medium"
+                      style={{ color: colors.secondary }}
+                      placeholder="Company Name"
+                    />
                   </div>
                   <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
                     <Calendar className="h-3 w-3" />
                     {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
                   </div>
                 </div>
-                 {exp.description && (
-                   <div className="text-sm leading-relaxed">
-                     {exp.description.split('\n').map((line, index) => (
-                       <div key={index} className="flex items-start gap-2">
-                         <span className="mt-1">{getBulletStyle('experience')}</span>
-                         <span>{line}</span>
-                       </div>
-                     ))}
-                   </div>
-                 )}
-                 {exp.keyResponsibilities && (
-                   <div className="text-sm leading-relaxed mt-2">
-                     <h4 className="font-medium text-xs uppercase tracking-wide mb-1" style={{ color: colors.secondary }}>Key Roles & Responsibilities:</h4>
-                     {exp.keyResponsibilities.split('\n').map((line, index) => (
-                       <div key={index} className="flex items-start gap-2">
-                         <span className="mt-1">{getBulletStyle('experience')}</span>
-                         <span>{line}</span>
-                       </div>
-                     ))}
-                   </div>
-                 )}
+                <EditableElement
+                  value={exp.description}
+                  path={['experience', index.toString(), 'description']}
+                  multiline={true}
+                  className="text-sm leading-relaxed mb-2"
+                  placeholder="Describe your responsibilities and achievements..."
+                />
+                <EditableElement
+                  value={exp.keyResponsibilities}
+                  path={['experience', index.toString(), 'keyResponsibilities']}
+                  multiline={true}
+                  className="text-sm leading-relaxed"
+                  placeholder="Key roles and responsibilities..."
+                />
               </div>
-            ))}
-          </div>
+            )}
+          />
         )}
 
         {/* Education */}
@@ -691,9 +675,15 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
   };
 
   return (
-    <div className="w-full h-full min-h-[800px]" style={{ color: colors.text }}>
-      {renderLayout()}
-    </div>
+    <LiveEditingProvider
+      data={data}
+      onDataChange={onDataChange || (() => {})}
+      isEditMode={isEditMode}
+    >
+      <div className="w-full h-full min-h-[800px]" style={{ color: colors.text }}>
+        {renderLayout()}
+      </div>
+    </LiveEditingProvider>
   );
 };
 
