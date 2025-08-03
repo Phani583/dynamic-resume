@@ -147,13 +147,47 @@ const Index = () => {
     const savedTheme = localStorage.getItem('currentTheme');
 
     if (savedData) {
-      setResumeData(JSON.parse(savedData));
+      try {
+        const parsedData = JSON.parse(savedData);
+        // Ensure all required arrays are initialized
+        const validatedData = {
+          ...parsedData,
+          experience: parsedData.experience || [],
+          education: parsedData.education || [],
+          skills: parsedData.skills || [],
+          certificates: parsedData.certificates || [],
+          projects: parsedData.projects || [],
+          hobbies: parsedData.hobbies || [],
+          declaration: parsedData.declaration || {
+            enabled: false,
+            text: 'I hereby declare that the information provided above is true to the best of my knowledge.'
+          },
+          signature: parsedData.signature || {
+            enabled: false,
+            name: '',
+            date: '',
+            location: ''
+          }
+        };
+        setResumeData(validatedData);
+      } catch (error) {
+        console.error('Error parsing saved resume data:', error);
+        // Reset to default if corrupted
+      }
     }
     if (savedCustomization) {
-      setCustomization(JSON.parse(savedCustomization));
+      try {
+        setCustomization(JSON.parse(savedCustomization));
+      } catch (error) {
+        console.error('Error parsing saved customization:', error);
+      }
     }
     if (savedTheme) {
-      setCurrentTheme(JSON.parse(savedTheme));
+      try {
+        setCurrentTheme(JSON.parse(savedTheme));
+      } catch (error) {
+        console.error('Error parsing saved theme:', error);
+      }
     }
   }, []);
 
