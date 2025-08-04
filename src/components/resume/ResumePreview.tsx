@@ -11,12 +11,16 @@ import {
   Calendar,
   Briefcase,
   GraduationCap,
-  Award
+  Award,
+  Layout
 } from 'lucide-react';
 import { LiveEditingProvider } from './LiveEditingProvider';
 import { EditableElement } from './EditableElement';
 import { EditableImage } from './EditableImage';
 import { EditableList } from './EditableList';
+import { SectionPicker } from './SectionPicker';
+import { TemplateManager, useTemplateManager, SectionTemplateConfig } from './TemplateManager';
+import { SectionTemplateType } from './SectionTemplates';
 
 interface ResumePreviewProps {
   data: ResumeData;
@@ -24,9 +28,22 @@ interface ResumePreviewProps {
   theme: ResumeTheme;
   isEditMode?: boolean;
   onDataChange?: (data: ResumeData) => void;
+  templateConfig?: SectionTemplateConfig;
+  onTemplateChange?: (sectionKey: string, templateId: SectionTemplateType) => void;
 }
 
-const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, theme, isEditMode = false, onDataChange }) => {
+const ResumePreview: React.FC<ResumePreviewProps> = ({ 
+  data, 
+  customization, 
+  theme, 
+  isEditMode = false, 
+  onDataChange,
+  templateConfig,
+  onTemplateChange 
+}) => {
+  const { templateConfig: defaultTemplateConfig, updateTemplate } = useTemplateManager();
+  const finalTemplateConfig = templateConfig || defaultTemplateConfig;
+  const finalOnTemplateChange = onTemplateChange || updateTemplate;
   const colors = customization.colors;
   
   const formatDate = (dateString: string) => {
@@ -181,6 +198,14 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
           >
             {title}
           </h2>
+          {isEditMode && (
+            <SectionPicker onTemplateSelect={finalOnTemplateChange}>
+              <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 rounded text-xs text-blue-600 hover:bg-blue-100 cursor-pointer transition-colors">
+                <Layout className="h-3 w-3" />
+                Template
+              </div>
+            </SectionPicker>
+          )}
         </div>
         <div className={`${dividerClass} mb-4`} style={{ borderColor: colors.primary }}></div>
         <div style={getSectionStyle(sectionId)}>
@@ -191,159 +216,172 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
   };
 
   const renderTraditionalLayout = () => (
-    <div className="max-w-4xl mx-auto p-8" style={{ backgroundColor: colors.background, color: colors.text }}>
-      {renderHeader()}
-      
-      <div className={getSpacingClass()}>
-        {/* Summary */}
-        {renderSection(
-          'Professional Summary',
-          'summary',
-          <EditableElement
-            value={data.personalInfo.summary}
-            path={['personalInfo', 'summary']}
-            multiline={true}
-            className="leading-relaxed"
-            placeholder="Write a compelling professional summary..."
-          />
-        )}
-
-        {/* Experience */}
-        {renderSection(
-          'Professional Experience',
-          'experience',
-          <EditableList
-            items={data.experience}
-            path={['experience']}
-            createNewItem={() => ({
-              id: Date.now().toString(),
-              jobTitle: '',
-              company: '',
-              startDate: '',
-              endDate: '',
-              current: false,
-              description: '',
-              keyResponsibilities: ''
-            })}
-            addButtonText="Add Experience"
-            renderItem={(exp, index) => (
-              <div>
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <EditableElement
-                      value={exp.jobTitle}
-                      path={['experience', index.toString(), 'jobTitle']}
-                      as="h3"
-                      className="font-semibold text-lg"
-                      placeholder="Job Title"
-                    />
-                    <EditableElement
-                      value={exp.company}
-                      path={['experience', index.toString(), 'company']}
-                      className="font-medium"
-                      style={{ color: colors.secondary }}
-                      placeholder="Company Name"
-                    />
-                  </div>
-                  <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
-                    <Calendar className="h-3 w-3" />
-                    {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
-                  </div>
-                </div>
-                <EditableElement
-                  value={exp.description}
-                  path={['experience', index.toString(), 'description']}
-                  multiline={true}
-                  className="text-sm leading-relaxed mb-2"
-                  placeholder="Describe your responsibilities and achievements..."
-                />
-                <EditableElement
-                  value={exp.keyResponsibilities}
-                  path={['experience', index.toString(), 'keyResponsibilities']}
-                  multiline={true}
-                  className="text-sm leading-relaxed"
-                  placeholder="Key roles and responsibilities..."
-                />
-              </div>
+    <TemplateManager
+      data={data}
+      customization={customization}
+      templateConfig={finalTemplateConfig}
+      onTemplateChange={finalOnTemplateChange}
+    >
+      {(renderSectionTemplate) => (
+        <div className="max-w-4xl mx-auto p-8" style={{ backgroundColor: colors.background, color: colors.text }}>
+          {renderHeader()}
+          
+          <div className={getSpacingClass()}>
+            {/* Summary */}
+            {renderSection(
+              'Professional Summary',
+              'summary',
+              <EditableElement
+                value={data.personalInfo.summary}
+                path={['personalInfo', 'summary']}
+                multiline={true}
+                className="leading-relaxed"
+                placeholder="Write a compelling professional summary..."
+              />
             )}
-          />
-        )}
 
-        {/* Education */}
-        {data.education.length > 0 && renderSection(
-          'Education',
-          'education',
-          <div className="space-y-4">
-            {data.education.map((edu) => (
-              <div key={edu.id}>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-semibold">{edu.degree}</h3>
-                    <p style={{ color: colors.secondary }}>{edu.school}</p>
-                    {/* Academic Performance */}
-                    {(edu.cgpa || edu.percentage || edu.letterGrade) && (
-                      <div className="text-sm mt-1" style={{ color: colors.secondary }}>
-                        {edu.cgpa && <span>CGPA: {edu.cgpa}</span>}
-                        {edu.percentage && <span>{edu.cgpa ? ' | ' : ''}Percentage: {edu.percentage}%</span>}
-                        {edu.letterGrade && <span>{(edu.cgpa || edu.percentage) ? ' | ' : ''}Grade: {edu.letterGrade}</span>}
+            {/* Experience */}
+            {data.experience.length > 0 && renderSection(
+              'Professional Experience',
+              'experience',
+              renderSectionTemplate('experience', data.experience) || (
+                <EditableList
+                  items={data.experience}
+                  path={['experience']}
+                  createNewItem={() => ({
+                    id: Date.now().toString(),
+                    jobTitle: '',
+                    company: '',
+                    startDate: '',
+                    endDate: '',
+                    current: false,
+                    description: '',
+                    keyResponsibilities: ''
+                  })}
+                  addButtonText="Add Experience"
+                  renderItem={(exp, index) => (
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <EditableElement
+                            value={exp.jobTitle}
+                            path={['experience', index.toString(), 'jobTitle']}
+                            as="h3"
+                            className="font-semibold text-lg"
+                            placeholder="Job Title"
+                          />
+                          <EditableElement
+                            value={exp.company}
+                            path={['experience', index.toString(), 'company']}
+                            className="font-medium"
+                            style={{ color: colors.secondary }}
+                            placeholder="Company Name"
+                          />
+                        </div>
+                        <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  <div className="text-sm" style={{ color: colors.secondary }}>
-                    {edu.startYear} - {edu.current ? 'Present' : edu.endYear}
-                  </div>
-                </div>
-                {edu.description && (
-                  <div className="text-sm leading-relaxed">
-                    {edu.description.split('\n').map((line, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <span className="mt-1">{getBulletStyle('education')}</span>
-                        <span>{line}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                      <EditableElement
+                        value={exp.description}
+                        path={['experience', index.toString(), 'description']}
+                        multiline={true}
+                        className="text-sm leading-relaxed mb-2"
+                        placeholder="Describe your responsibilities and achievements..."
+                      />
+                      <EditableElement
+                        value={exp.keyResponsibilities}
+                        path={['experience', index.toString(), 'keyResponsibilities']}
+                        multiline={true}
+                        className="text-sm leading-relaxed"
+                        placeholder="Key roles and responsibilities..."
+                      />
+                    </div>
+                  )}
+                />
+              )
+            )}
 
-        {/* Skills */}
-        {data.skills.length > 0 && renderSection(
-          'Skills & Technologies',
-          'skills',
-          <div className="space-y-3">
-            {Object.entries(
-              data.skills.reduce((acc, skill) => {
-                if (!acc[skill.category]) acc[skill.category] = [];
-                acc[skill.category].push(skill);
-                return acc;
-              }, {} as Record<string, typeof data.skills>)
-            ).map(([category, categorySkills]) => (
-              <div key={category}>
-                <h4 className="text-sm font-semibold mb-2" style={{ color: colors.secondary }}>
-                  {category}
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {categorySkills.map((skill, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 rounded-full text-sm font-medium"
-                      style={{
-                        backgroundColor: colors.accent + '20',
-                        color: colors.accent,
-                        border: `1px solid ${colors.accent}40`
-                      }}
-                    >
-                      <span className="font-medium">{skill.name}</span>
-                      <span className="text-xs opacity-75 ml-1">({skill.level})</span>
-                    </span>
+            {/* Education */}
+            {data.education.length > 0 && renderSection(
+              'Education',
+              'education',
+              renderSectionTemplate('education', data.education) || (
+                <div className="space-y-4">
+                  {data.education.map((edu) => (
+                    <div key={edu.id}>
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-semibold">{edu.degree}</h3>
+                          <p style={{ color: colors.secondary }}>{edu.school}</p>
+                          {/* Academic Performance */}
+                          {(edu.cgpa || edu.percentage || edu.letterGrade) && (
+                            <div className="text-sm mt-1" style={{ color: colors.secondary }}>
+                              {edu.cgpa && <span>CGPA: {edu.cgpa}</span>}
+                              {edu.percentage && <span>{edu.cgpa ? ' | ' : ''}Percentage: {edu.percentage}%</span>}
+                              {edu.letterGrade && <span>{(edu.cgpa || edu.percentage) ? ' | ' : ''}Grade: {edu.letterGrade}</span>}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-sm" style={{ color: colors.secondary }}>
+                          {edu.startYear} - {edu.current ? 'Present' : edu.endYear}
+                        </div>
+                      </div>
+                      {edu.description && (
+                        <div className="text-sm leading-relaxed">
+                          {edu.description.split('\n').map((line, index) => (
+                            <div key={index} className="flex items-start gap-2">
+                              <span className="mt-1">{getBulletStyle('education')}</span>
+                              <span>{line}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              )
+            )}
+
+            {/* Skills */}
+            {data.skills.length > 0 && renderSection(
+              'Skills & Technologies',
+              'skills',
+              renderSectionTemplate('skills', data.skills) || (
+                <div className="space-y-3">
+                  {Object.entries(
+                    data.skills.reduce((acc, skill) => {
+                      if (!acc[skill.category]) acc[skill.category] = [];
+                      acc[skill.category].push(skill);
+                      return acc;
+                    }, {} as Record<string, typeof data.skills>)
+                  ).map(([category, categorySkills]) => (
+                    <div key={category}>
+                      <h4 className="text-sm font-semibold mb-2" style={{ color: colors.secondary }}>
+                        {category}
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {categorySkills.map((skill, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 rounded-full text-sm font-medium"
+                            style={{
+                              backgroundColor: colors.accent + '20',
+                              color: colors.accent,
+                              border: `1px solid ${colors.accent}40`
+                            }}
+                          >
+                            <span className="font-medium">{skill.name}</span>
+                            <span className="text-xs opacity-75 ml-1">({skill.level})</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
 
         {/* Certificates */}
         {data.certificates.length > 0 && renderSection(
@@ -374,44 +412,46 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
           </div>
         )}
 
-        {/* Projects */}
-        {data.projects.length > 0 && renderSection(
-          'Projects & Internships',
-          'projects',
-          <div className="space-y-4">
-            {data.projects.map((project) => (
-              <div key={project.id}>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-semibold text-lg">{project.name}</h3>
-                    <p className="font-medium text-sm" style={{ color: colors.secondary }}>{project.technologies}</p>
-                  </div>
-                  <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
-                    <Calendar className="h-3 w-3" />
-                    {formatDate(project.startDate)} - {project.current ? 'Present' : formatDate(project.endDate)}
-                  </div>
-                </div>
-                {project.description && (
-                  <div className="text-sm leading-relaxed mb-2">
-                    {project.description.split('\n').map((line, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <span className="mt-1">{getBulletStyle('projects')}</span>
-                        <span>{line}</span>
+            {/* Projects */}
+            {data.projects.length > 0 && renderSection(
+              'Projects & Internships',
+              'projects',
+              renderSectionTemplate('projects', data.projects) || (
+                <div className="space-y-4">
+                  {data.projects.map((project) => (
+                    <div key={project.id}>
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-semibold text-lg">{project.name}</h3>
+                          <p className="font-medium text-sm" style={{ color: colors.secondary }}>{project.technologies}</p>
+                        </div>
+                        <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(project.startDate)} - {project.current ? 'Present' : formatDate(project.endDate)}
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-                {project.url && (
-                  <div className="text-sm">
-                    <a href={project.url} className="hover:underline" style={{ color: colors.accent }}>
-                      View Project
-                    </a>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                      {project.description && (
+                        <div className="text-sm leading-relaxed mb-2">
+                          {project.description.split('\n').map((line, index) => (
+                            <div key={index} className="flex items-start gap-2">
+                              <span className="mt-1">{getBulletStyle('projects')}</span>
+                              <span>{line}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {project.url && (
+                        <div className="text-sm">
+                          <a href={project.url} className="hover:underline" style={{ color: colors.accent }}>
+                            View Project
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
 
         {/* Additional Information */}
         {data.additionalInfo && renderSection(
@@ -424,61 +464,69 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, customization, them
           </div>
         )}
 
-        {/* Hobbies */}
-        {data.hobbies.length > 0 && renderSection(
-          'Hobbies & Interests',
-          'hobbies',
-          <div className="flex flex-wrap gap-2">
-            {data.hobbies.map((hobby, index) => (
-              <span
-                key={hobby.id}
-                className="px-3 py-1 rounded-full text-sm"
-                style={{
-                  backgroundColor: colors.secondary + '20',
-                  color: colors.secondary,
-                  border: `1px solid ${colors.secondary}40`
-                }}
-              >
-                {hobby.name}
-              </span>
-            ))}
-          </div>
-        )}
+            {/* Hobbies */}
+            {data.hobbies.length > 0 && renderSection(
+              'Hobbies & Interests',
+              'hobbies',
+              renderSectionTemplate('hobbies', data.hobbies) || (
+                <div className="flex flex-wrap gap-2">
+                  {data.hobbies.map((hobby, index) => (
+                    <span
+                      key={hobby.id}
+                      className="px-3 py-1 rounded-full text-sm"
+                      style={{
+                        backgroundColor: colors.secondary + '20',
+                        color: colors.secondary,
+                        border: `1px solid ${colors.secondary}40`
+                      }}
+                    >
+                      {hobby.name}
+                    </span>
+                  ))}
+                </div>
+              )
+            )}
 
-        {/* Declaration */}
-        {data.declaration.enabled && renderSection(
-          'Declaration',
-          'declaration',
-          <div className="text-sm leading-relaxed">
-            <p>{data.declaration.text}</p>
-          </div>
-        )}
+            {/* Declaration */}
+            {data.declaration.enabled && renderSection(
+              'Declaration',
+              'declaration',
+              renderSectionTemplate('declaration', data.declaration) || (
+                <div className="text-sm leading-relaxed">
+                  <p>{data.declaration.text}</p>
+                </div>
+              )
+            )}
 
-        {/* Signature */}
-        {data.signature.enabled && renderSection(
-          'Signature',
-          'signature',
-          <div className="flex justify-between items-end">
-            <div>
-              {data.signature.digitalSignature && (
-                <img
-                  src={data.signature.digitalSignature}
-                  alt="Digital Signature"
-                  className="h-16 object-contain mb-2"
-                />
-              )}
-              <div className="text-sm">
-                <p className="font-medium">{data.signature.name}</p>
-                <p style={{ color: colors.secondary }}>{data.signature.date}</p>
-              </div>
-            </div>
-            <div className="text-sm text-right" style={{ color: colors.secondary }}>
-              <p>{data.signature.location}</p>
-            </div>
+            {/* Signature */}
+            {data.signature.enabled && renderSection(
+              'Signature',
+              'signature',
+              renderSectionTemplate('signature', data.signature) || (
+                <div className="flex justify-between items-end">
+                  <div>
+                    {data.signature.digitalSignature && (
+                      <img
+                        src={data.signature.digitalSignature}
+                        alt="Digital Signature"
+                        className="h-16 object-contain mb-2"
+                      />
+                    )}
+                    <div className="text-sm">
+                      <p className="font-medium">{data.signature.name}</p>
+                      <p style={{ color: colors.secondary }}>{data.signature.date}</p>
+                    </div>
+                  </div>
+                  <div className="text-sm text-right" style={{ color: colors.secondary }}>
+                    <p>{data.signature.location}</p>
+                  </div>
+                </div>
+              )
+            )}
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </TemplateManager>
   );
 
   const renderSidebarLayout = () => (

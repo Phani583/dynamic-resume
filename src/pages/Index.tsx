@@ -8,6 +8,7 @@ import CustomizationPanel from '@/components/resume/CustomizationPanel';
 import { ResumeData, CustomizationOptions, ResumeTheme } from '@/components/resume/types';
 import { RESUME_THEMES } from '@/components/resume/constants';
 import { exportToDocx } from '@/lib/docxExporter';
+import { useTemplateManager } from '@/components/resume/TemplateManager';
 
 const Index = () => {
   const { toast } = useToast();
@@ -115,6 +116,7 @@ const Index = () => {
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const { templateConfig, updateTemplate } = useTemplateManager();
 
   // Update customization when theme changes
   useEffect(() => {
@@ -335,6 +337,8 @@ const Index = () => {
                 theme={currentTheme}
                 isEditMode={isEditMode}
                 onDataChange={setResumeData}
+                templateConfig={templateConfig}
+                onTemplateChange={updateTemplate}
               />
             </div>
           </div>
