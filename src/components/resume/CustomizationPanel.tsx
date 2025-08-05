@@ -16,19 +16,23 @@ import {
   LAYOUT_OPTIONS 
 } from './constants';
 import { CustomizationOptions, ResumeTheme, SectionCustomization } from './types';
+import { SectionPicker } from './SectionPicker';
+import { SectionTemplateType } from './SectionTemplates';
 
 interface CustomizationPanelProps {
   customization: CustomizationOptions;
   onCustomizationChange: (customization: CustomizationOptions) => void;
   currentTheme: ResumeTheme;
   onThemeChange: (theme: ResumeTheme) => void;
+  onTemplateChange?: (sectionKey: string, templateId: SectionTemplateType) => void;
 }
 
 const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
   customization,
   onCustomizationChange,
   currentTheme,
-  onThemeChange
+  onThemeChange,
+  onTemplateChange
 }) => {
   const [selectedSection, setSelectedSection] = useState('summary');
 
@@ -79,8 +83,12 @@ const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="overflow-y-auto h-[calc(100%-80px)]">
-        <Tabs defaultValue="themes" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="templates" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="templates" className="text-xs">
+              <Layout className="w-3 h-3 mr-1" />
+              Templates
+            </TabsTrigger>
             <TabsTrigger value="themes" className="text-xs">
               <Palette className="w-3 h-3 mr-1" />
               Themes
@@ -98,6 +106,18 @@ const CustomizationPanel: React.FC<CustomizationPanelProps> = ({
               Colors
             </TabsTrigger>
           </TabsList>
+
+          {/* Templates Tab */}
+          <TabsContent value="templates" className="space-y-4">
+            <div>
+              <SectionPicker onTemplateSelect={onTemplateChange || (() => {})}>
+                <Button variant="outline" className="w-full">
+                  <Layout className="w-4 h-4 mr-2" />
+                  Choose Section Templates
+                </Button>
+              </SectionPicker>
+            </div>
+          </TabsContent>
 
           {/* Themes Tab */}
           <TabsContent value="themes" className="space-y-4">
