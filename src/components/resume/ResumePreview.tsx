@@ -225,7 +225,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
       {(renderSectionTemplate, renderCompleteTemplate) => {
         // Check if a complete template is selected
         const completeTemplateId = finalTemplateConfig['complete'] as SectionTemplateType;
-        if (completeTemplateId && completeTemplateId === 'professional-classic') {
+        if (completeTemplateId && completeTemplateId !== 'default' && completeTemplateId === 'professional-classic') {
           return renderCompleteTemplate(completeTemplateId);
         }
         

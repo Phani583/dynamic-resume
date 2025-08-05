@@ -50,6 +50,10 @@ export const SectionPicker: React.FC<SectionPickerProps> = ({ onTemplateSelect, 
     }
   };
 
+  const handleTemplateReset = (category: string) => {
+    onTemplateSelect(category, 'default' as SectionTemplateType);
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -79,12 +83,22 @@ export const SectionPicker: React.FC<SectionPickerProps> = ({ onTemplateSelect, 
           {categories.map((category) => (
             <TabsContent key={category.id} value={category.id} className="mt-6">
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <category.icon className="h-5 w-5" />
-                  <h3 className="text-lg font-semibold">{category.name} Templates</h3>
-                  <Badge className={category.color}>
-                    {getTemplatesByCategory(category.id).length} templates
-                  </Badge>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <category.icon className="h-5 w-5" />
+                    <h3 className="text-lg font-semibold">{category.name} Templates</h3>
+                    <Badge className={category.color}>
+                      {getTemplatesByCategory(category.id).length} templates
+                    </Badge>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleTemplateReset(category.id)}
+                    className="text-xs"
+                  >
+                    Reset to Default
+                  </Button>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

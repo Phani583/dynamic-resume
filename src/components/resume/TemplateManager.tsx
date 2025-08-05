@@ -28,6 +28,12 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({
 }) => {
   const renderSection = (sectionKey: string, sectionData: any) => {
     const templateId = templateConfig[sectionKey];
+    
+    // If template is 'default' or not found, return null to use original layout
+    if (!templateId || templateId === 'default') {
+      return null;
+    }
+    
     const template = getSectionTemplate(templateId);
     
     if (!template) {
@@ -46,6 +52,11 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({
   };
 
   const renderCompleteTemplate = (templateId: SectionTemplateType) => {
+    // If template is 'default', don't render complete template
+    if (!templateId || templateId === 'default') {
+      return null;
+    }
+    
     const template = getSectionTemplate(templateId);
     if (!template || template.category !== 'complete') {
       return null;

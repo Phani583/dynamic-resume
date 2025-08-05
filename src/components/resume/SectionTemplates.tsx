@@ -32,7 +32,8 @@ export type SectionTemplateType =
   | 'hobbies-simple'
   | 'declaration-simple'
   | 'signature-simple'
-  | 'professional-classic';
+  | 'professional-classic'
+  | 'default';
 
 export interface SectionTemplate {
   id: SectionTemplateType;
