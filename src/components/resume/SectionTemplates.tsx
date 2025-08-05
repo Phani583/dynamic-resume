@@ -31,13 +31,14 @@ export type SectionTemplateType =
   | 'roles-nested'
   | 'hobbies-simple'
   | 'declaration-simple'
-  | 'signature-simple';
+  | 'signature-simple'
+  | 'professional-classic';
 
 export interface SectionTemplate {
   id: SectionTemplateType;
   name: string;
   description: string;
-  category: 'experience' | 'education' | 'projects' | 'skills' | 'roles' | 'hobbies' | 'declaration' | 'signature';
+  category: 'experience' | 'education' | 'projects' | 'skills' | 'roles' | 'hobbies' | 'declaration' | 'signature' | 'complete';
   component: React.ComponentType<any>;
 }
 
@@ -510,6 +511,247 @@ const SignatureSimpleTemplate: React.FC<{ data: ResumeData['signature'] }> = ({ 
   </div>
 );
 
+// Professional Classic Complete Template (Based on uploaded image)
+const ProfessionalClassicTemplate: React.FC<{ data: ResumeData, colors: any, customization: any }> = ({ data, colors, customization }) => (
+  <div className="max-w-4xl mx-auto bg-white p-8 min-h-screen" style={{ fontFamily: 'serif' }}>
+    {/* Header Section */}
+    <div className="text-center border-b-2 border-gray-300 pb-6 mb-8">
+      <EditableElement
+        value={data.personalInfo.fullName || 'FIRST NAME LAST NAME'}
+        path={['personalInfo', 'fullName']}
+        as="h1"
+        className="text-4xl font-bold tracking-wider text-gray-800 mb-4"
+        style={{ letterSpacing: '0.1em' }}
+      />
+      <div className="text-gray-600 space-y-1">
+        <EditableElement
+          value={`${data.personalInfo.location || 'Address'} • ${data.personalInfo.phone || 'Phone'}`}
+          path={['personalInfo', 'location']}
+          as="p"
+          className="text-sm"
+        />
+        <div className="flex justify-center items-center space-x-2 text-sm">
+          <EditableElement
+            value={data.personalInfo.email || 'Email'}
+            path={['personalInfo', 'email']}
+            className="text-green-600 hover:underline"
+          />
+          <span>•</span>
+          <EditableElement
+            value={data.publicLinks.linkedin || 'LinkedIn Profile'}
+            path={['publicLinks', 'linkedin']}
+            className="text-green-600 hover:underline"
+          />
+          <span>•</span>
+          <EditableElement
+            value={data.publicLinks.website || 'Twitter/Blog/Portfolio'}
+            path={['publicLinks', 'website']}
+            className="text-green-600 hover:underline"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Career Objective */}
+    {data.personalInfo.summary && (
+      <div className="mb-8">
+        <EditableElement
+          value={data.personalInfo.summary || 'To replace this text with your own, just click it and start typing. Briefly state your career objective, or summarize what makes you stand out. Use language from the job description as keywords.'}
+          path={['personalInfo', 'summary']}
+          as="p"
+          className="text-gray-700 leading-relaxed text-justify"
+          multiline
+        />
+      </div>
+    )}
+
+    {/* Experience Section */}
+    <div className="mb-8">
+      <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300">EXPERIENCE</h2>
+      <EditableList
+        items={data.experience}
+        path={['experience']}
+        createNewItem={() => ({
+          id: Date.now().toString(),
+          jobTitle: 'JOB TITLE',
+          company: 'COMPANY',
+          startDate: 'DATES FROM',
+          endDate: 'TO',
+          current: false,
+          description: 'Describe your responsibilities and achievements in terms of impact and results. Use examples, but keep it short.',
+          keyResponsibilities: ''
+        })}
+        renderItem={(exp, index) => (
+          <div className="mb-6 border-l-4 border-gray-400 pl-4">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <p className="text-gray-600 text-sm">
+                  <EditableElement
+                    value={exp.startDate}
+                    path={['experience', index.toString(), 'startDate']}
+                    className="inline"
+                  />
+                  {' - '}
+                  <EditableElement
+                    value={exp.current ? 'Present' : exp.endDate}
+                    path={['experience', index.toString(), exp.current ? 'current' : 'endDate']}
+                    className="inline"
+                  />
+                </p>
+                <EditableElement
+                  value={exp.jobTitle}
+                  path={['experience', index.toString(), 'jobTitle']}
+                  as="h3"
+                  className="font-bold text-green-600 text-lg"
+                />
+                <EditableElement
+                  value={exp.company}
+                  path={['experience', index.toString(), 'company']}
+                  as="p"
+                  className="font-bold text-gray-800"
+                />
+              </div>
+            </div>
+            <EditableElement
+              value={exp.description}
+              path={['experience', index.toString(), 'description']}
+              as="p"
+              className="text-gray-700 text-sm leading-relaxed"
+              multiline
+            />
+          </div>
+        )}
+      />
+    </div>
+
+    {/* Education Section */}
+    <div className="mb-8">
+      <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300">EDUCATION</h2>
+      <EditableList
+        items={data.education}
+        path={['education']}
+        createNewItem={() => ({
+          id: Date.now().toString(),
+          degree: 'DEGREE TITLE',
+          school: 'SCHOOL',
+          startYear: 'MONTH YEAR',
+          endYear: 'MONTH YEAR',
+          current: false,
+          cgpa: '',
+          percentage: '',
+          letterGrade: '',
+          description: "It's okay to brag about your GPA, awards, and honors. Feel free to summarize your coursework too."
+        })}
+        renderItem={(edu, index) => (
+          <div className="mb-6 border-l-4 border-gray-400 pl-4">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <p className="text-gray-600 text-sm">
+                  <EditableElement
+                    value={edu.startYear}
+                    path={['education', index.toString(), 'startYear']}
+                    className="inline"
+                  />
+                  {' - '}
+                  <EditableElement
+                    value={edu.current ? 'Present' : edu.endYear}
+                    path={['education', index.toString(), edu.current ? 'current' : 'endYear']}
+                    className="inline"
+                  />
+                </p>
+                <EditableElement
+                  value={edu.degree}
+                  path={['education', index.toString(), 'degree']}
+                  as="h3"
+                  className="font-bold text-green-600 text-lg"
+                />
+                <EditableElement
+                  value={edu.school}
+                  path={['education', index.toString(), 'school']}
+                  as="p"
+                  className="font-bold text-gray-800"
+                />
+              </div>
+            </div>
+            {edu.description && (
+              <EditableElement
+                value={edu.description}
+                path={['education', index.toString(), 'description']}
+                as="p"
+                className="text-gray-700 text-sm leading-relaxed"
+                multiline
+              />
+            )}
+          </div>
+        )}
+      />
+    </div>
+
+    {/* Skills Section */}
+    <div className="mb-8">
+      <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300">SKILLS</h2>
+      <div className="grid grid-cols-2 gap-x-8">
+        <div className="space-y-2">
+          <EditableList
+            items={data.skills.slice(0, Math.ceil(data.skills.length / 2))}
+            path={['skills']}
+            createNewItem={() => ({
+              id: Date.now().toString(),
+              name: 'List your strengths relevant for the role you\'re applying for',
+              category: 'Technical',
+              level: 'Intermediate'
+            })}
+            renderItem={(skill, index) => (
+              <div className="flex items-start">
+                <span className="inline-block w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <EditableElement
+                  value={skill.name}
+                  path={['skills', index.toString(), 'name']}
+                  className="text-gray-700 text-sm"
+                />
+              </div>
+            )}
+          />
+        </div>
+        <div className="space-y-2">
+          <EditableList
+            items={data.skills.slice(Math.ceil(data.skills.length / 2))}
+            path={['skills']}
+            createNewItem={() => ({
+              id: Date.now().toString(),
+              name: 'List one of your strengths',
+              category: 'Technical',
+              level: 'Intermediate'
+            })}
+            renderItem={(skill, index) => (
+              <div className="flex items-start">
+                <span className="inline-block w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <EditableElement
+                  value={skill.name}
+                  path={['skills', (Math.ceil(data.skills.length / 2) + index).toString(), 'name']}
+                  className="text-gray-700 text-sm"
+                />
+              </div>
+            )}
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Activities Section */}
+    <div className="mb-8">
+      <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300">ACTIVITIES</h2>
+      <EditableElement
+        value={data.hobbies.map(h => h.name).join(', ') || 'Use this section to highlight your relevant passions, activities, and how you like to give back. It\'s good to include Leadership and volunteer experiences here. Or show off important extras like publications, certifications, languages and more.'}
+        path={['hobbies']}
+        as="p"
+        className="text-gray-700 text-sm leading-relaxed"
+        multiline
+      />
+    </div>
+  </div>
+);
+
 export const sectionTemplates: SectionTemplate[] = [
   // Experience Templates
   {
@@ -578,6 +820,14 @@ export const sectionTemplates: SectionTemplate[] = [
     description: 'Traditional signature layout',
     category: 'signature',
     component: SignatureSimpleTemplate,
+  },
+  // Complete Template
+  {
+    id: 'professional-classic',
+    name: 'Professional Classic',
+    description: 'Complete professional resume template with traditional formatting',
+    category: 'complete',
+    component: ProfessionalClassicTemplate,
   },
 ];
 

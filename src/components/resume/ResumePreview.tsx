@@ -222,9 +222,16 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
       templateConfig={finalTemplateConfig}
       onTemplateChange={finalOnTemplateChange}
     >
-      {(renderSectionTemplate) => (
-        <div className="max-w-4xl mx-auto p-8" style={{ backgroundColor: colors.background, color: colors.text }}>
-          {renderHeader()}
+      {(renderSectionTemplate, renderCompleteTemplate) => {
+        // Check if a complete template is selected
+        const completeTemplateId = finalTemplateConfig['complete'] as SectionTemplateType;
+        if (completeTemplateId && completeTemplateId === 'professional-classic') {
+          return renderCompleteTemplate(completeTemplateId);
+        }
+        
+        return (
+          <div className="max-w-4xl mx-auto p-8" style={{ backgroundColor: colors.background, color: colors.text }}>
+            {renderHeader()}
           
           <div className={getSpacingClass()}>
             {/* Summary */}
@@ -523,9 +530,10 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
                 </div>
               )
             )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      }}
     </TemplateManager>
   );
 

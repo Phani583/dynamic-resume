@@ -24,10 +24,11 @@ interface SectionPickerProps {
 }
 
 export const SectionPicker: React.FC<SectionPickerProps> = ({ onTemplateSelect, children }) => {
-  const [selectedCategory, setSelectedCategory] = useState<SectionTemplate['category']>('experience');
+  const [selectedCategory, setSelectedCategory] = useState<SectionTemplate['category']>('complete');
   const [previewTemplate, setPreviewTemplate] = useState<SectionTemplateType | null>(null);
 
   const categories = [
+    { id: 'complete', name: 'Complete Templates', icon: Layout, color: 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800' },
     { id: 'experience', name: 'Work Experience', icon: Briefcase, color: 'bg-blue-100 text-blue-800' },
     { id: 'education', name: 'Education', icon: GraduationCap, color: 'bg-green-100 text-green-800' },
     { id: 'projects', name: 'Projects', icon: FolderOpen, color: 'bg-purple-100 text-purple-800' },
@@ -40,7 +41,12 @@ export const SectionPicker: React.FC<SectionPickerProps> = ({ onTemplateSelect, 
   const handleTemplateSelect = (templateId: SectionTemplateType) => {
     const template = sectionTemplates.find(t => t.id === templateId);
     if (template) {
-      onTemplateSelect(template.category, templateId);
+      if (template.category === 'complete') {
+        // For complete templates, apply to the entire resume
+        onTemplateSelect('complete', templateId);
+      } else {
+        onTemplateSelect(template.category, templateId);
+      }
     }
   };
 
@@ -58,7 +64,7 @@ export const SectionPicker: React.FC<SectionPickerProps> = ({ onTemplateSelect, 
         </DialogHeader>
         
         <Tabs value={selectedCategory} onValueChange={(value) => setSelectedCategory(value as SectionTemplate['category'])}>
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
             {categories.map((category) => {
               const Icon = category.icon;
               return (
@@ -83,10 +89,13 @@ export const SectionPicker: React.FC<SectionPickerProps> = ({ onTemplateSelect, 
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {getTemplatesByCategory(category.id).map((template) => (
-                    <Card key={template.id} className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50">
+                    <Card key={template.id} className={`cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50 ${template.category === 'complete' ? 'bg-gradient-to-br from-purple-50 to-pink-50' : ''}`}>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-base">{template.name}</CardTitle>
+                          <CardTitle className={`text-base ${template.category === 'complete' ? 'text-purple-800' : ''}`}>
+                            {template.name}
+                            {template.category === 'complete' && <span className="ml-2 text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full">Complete</span>}
+                          </CardTitle>
                           <div className="flex gap-1">
                             <Button
                               size="sm"
@@ -103,16 +112,28 @@ export const SectionPicker: React.FC<SectionPickerProps> = ({ onTemplateSelect, 
                       <CardContent className="pt-0">
                         <div className="space-y-3">
                           {/* Template Preview Thumbnail */}
-                          <div className="w-full h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded border-2 border-dashed border-gray-200 flex items-center justify-center">
-                            <div className="text-center">
-                              <Layout className="h-6 w-6 mx-auto text-gray-400 mb-1" />
-                              <span className="text-xs text-gray-500">Preview</span>
-                            </div>
+                          <div className={`w-full h-24 rounded border-2 border-dashed flex items-center justify-center ${
+                            template.category === 'complete' 
+                              ? 'bg-gradient-to-br from-purple-100 to-pink-100 border-purple-200' 
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
+                          }`}>
+                            {template.id === 'professional-classic' ? (
+                              <img 
+                                src="/lovable-uploads/0fbd4044-8108-4e35-88c8-6a5cf01819ea.png" 
+                                alt="Professional Classic Template Preview" 
+                                className="w-full h-full object-cover rounded opacity-80"
+                              />
+                            ) : (
+                              <div className="text-center">
+                                <Layout className="h-6 w-6 mx-auto text-gray-400 mb-1" />
+                                <span className="text-xs text-gray-500">Preview</span>
+                              </div>
+                            )}
                           </div>
                           
                           <Button 
                             size="sm" 
-                            className="w-full"
+                            className={`w-full ${template.category === 'complete' ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' : ''}`}
                             onClick={() => handleTemplateSelect(template.id)}
                           >
                             Apply Template

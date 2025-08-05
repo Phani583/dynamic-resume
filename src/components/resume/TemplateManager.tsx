@@ -11,7 +11,11 @@ interface TemplateManagerProps {
   customization: CustomizationOptions;
   templateConfig: SectionTemplateConfig;
   onTemplateChange: (sectionKey: string, templateId: SectionTemplateType) => void;
-  children: (renderSection: (sectionKey: string, sectionData: any) => React.ReactNode) => React.ReactNode;
+  onCompleteTemplateApply?: (templateId: SectionTemplateType) => void;
+  children: (
+    renderSection: (sectionKey: string, sectionData: any) => React.ReactNode,
+    renderCompleteTemplate: (templateId: SectionTemplateType) => React.ReactNode
+  ) => React.ReactNode;
 }
 
 export const TemplateManager: React.FC<TemplateManagerProps> = ({
@@ -19,6 +23,7 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({
   customization,
   templateConfig,
   onTemplateChange,
+  onCompleteTemplateApply,
   children
 }) => {
   const renderSection = (sectionKey: string, sectionData: any) => {
@@ -40,9 +45,26 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({
     );
   };
 
+  const renderCompleteTemplate = (templateId: SectionTemplateType) => {
+    const template = getSectionTemplate(templateId);
+    if (!template || template.category !== 'complete') {
+      return null;
+    }
+
+    const TemplateComponent = template.component;
+    
+    return (
+      <TemplateComponent
+        data={data}
+        colors={customization.colors}
+        customization={customization}
+      />
+    );
+  };
+
   return (
     <>
-      {children(renderSection)}
+      {children(renderSection, renderCompleteTemplate)}
     </>
   );
 };
