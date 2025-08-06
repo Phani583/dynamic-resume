@@ -45,6 +45,36 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
   const finalTemplateConfig = templateConfig || defaultTemplateConfig;
   const finalOnTemplateChange = onTemplateChange || updateTemplate;
   const colors = customization.colors;
+
+  // Helper function to check if resume data is empty
+  const isResumeEmpty = () => {
+    return !data.personalInfo.fullName && 
+           !data.personalInfo.email && 
+           !data.personalInfo.phone && 
+           !data.personalInfo.location &&
+           !data.personalInfo.summary &&
+           data.experience.length === 0 &&
+           data.education.length === 0 &&
+           data.skills.length === 0 &&
+           data.certificates.length === 0 &&
+           data.projects.length === 0 &&
+           data.hobbies.length === 0;
+  };
+
+  // Helper function to check if a specific section has data
+  const hasData = (sectionKey: string) => {
+    switch (sectionKey) {
+      case 'experience': return data.experience.length > 0;
+      case 'education': return data.education.length > 0;
+      case 'skills': return data.skills.length > 0;
+      case 'certificates': return data.certificates.length > 0;
+      case 'projects': return data.projects.length > 0;
+      case 'hobbies': return data.hobbies.length > 0;
+      case 'summary': return data.personalInfo.summary.trim() !== '';
+      case 'additionalInfo': return data.additionalInfo.trim() !== '';
+      default: return false;
+    }
+  };
   
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
@@ -215,6 +245,19 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
     );
   };
 
+  const renderEmptyState = () => {
+    if (!isResumeEmpty() || !isEditMode) return null;
+    
+    return (
+      <div className="text-center py-16 text-gray-400">
+        <User className="h-24 w-24 mx-auto mb-6 opacity-50" />
+        <h3 className="text-xl font-semibold mb-2">Start Building Your Resume</h3>
+        <p className="text-sm mb-4">Fill out the form on the left to create your professional resume</p>
+        <p className="text-xs">Your content will appear here as you add it</p>
+      </div>
+    );
+  };
+
   const renderTraditionalLayout = () => (
     <TemplateManager
       data={data}
@@ -232,513 +275,562 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
         return (
           <div className="max-w-4xl mx-auto p-8" style={{ backgroundColor: colors.background, color: colors.text }}>
             {renderHeader()}
-          
-          <div className={getSpacingClass()}>
-            {/* Summary */}
-            {renderSection(
-              'Professional Summary',
-              'summary',
-              <EditableElement
-                value={data.personalInfo.summary}
-                path={['personalInfo', 'summary']}
-                multiline={true}
-                className="leading-relaxed"
-                placeholder="Write a compelling professional summary..."
-              />
-            )}
-
-            {/* Experience */}
-            {data.experience.length > 0 && renderSection(
-              'Professional Experience',
-              'experience',
-              renderSectionTemplate('experience', data.experience) || (
-                <EditableList
-                  items={data.experience}
-                  path={['experience']}
-                  createNewItem={() => ({
-                    id: Date.now().toString(),
-                    jobTitle: '',
-                    company: '',
-                    startDate: '',
-                    endDate: '',
-                    current: false,
-                    description: '',
-                    keyResponsibilities: ''
-                  })}
-                  addButtonText="Add Experience"
-                  renderItem={(exp, index) => (
-                    <div>
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <EditableElement
-                            value={exp.jobTitle}
-                            path={['experience', index.toString(), 'jobTitle']}
-                            as="h3"
-                            className="font-semibold text-lg"
-                            placeholder="Job Title"
-                          />
-                          <EditableElement
-                            value={exp.company}
-                            path={['experience', index.toString(), 'company']}
-                            className="font-medium"
-                            style={{ color: colors.secondary }}
-                            placeholder="Company Name"
-                          />
-                        </div>
-                        <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
-                          <Calendar className="h-3 w-3" />
-                          {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
-                        </div>
-                      </div>
-                      <EditableElement
-                        value={exp.description}
-                        path={['experience', index.toString(), 'description']}
-                        multiline={true}
-                        className="text-sm leading-relaxed mb-2"
-                        placeholder="Describe your responsibilities and achievements..."
-                      />
-                      <EditableElement
-                        value={exp.keyResponsibilities}
-                        path={['experience', index.toString(), 'keyResponsibilities']}
-                        multiline={true}
-                        className="text-sm leading-relaxed"
-                        placeholder="Key roles and responsibilities..."
-                      />
+            
+            {renderEmptyState()}
+            
+            {!isResumeEmpty() && (
+              <div className={getSpacingClass()}>
+                {/* Summary */}
+                {(hasData('summary') || isEditMode) && renderSection(
+                  'Professional Summary',
+                  'summary',
+                  data.personalInfo.summary ? (
+                    <EditableElement
+                      value={data.personalInfo.summary}
+                      path={['personalInfo', 'summary']}
+                      multiline={true}
+                      className="leading-relaxed"
+                      placeholder="Write a compelling professional summary..."
+                    />
+                  ) : (
+                    <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                      <User className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">No professional summary added yet</p>
+                      <p className="text-xs mt-1">Click here to add a compelling summary</p>
                     </div>
-                  )}
-                />
-              )
-            )}
+                  )
+                )}
 
-            {/* Education */}
-            {data.education.length > 0 && renderSection(
-              'Education',
-              'education',
-              renderSectionTemplate('education', data.education) || (
-                <div className="space-y-4">
-                  {data.education.map((edu) => (
-                    <div key={edu.id}>
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-semibold">{edu.degree}</h3>
-                          <p style={{ color: colors.secondary }}>{edu.school}</p>
-                          {/* Academic Performance */}
-                          {(edu.cgpa || edu.percentage || edu.letterGrade) && (
-                            <div className="text-sm mt-1" style={{ color: colors.secondary }}>
-                              {edu.cgpa && <span>CGPA: {edu.cgpa}</span>}
-                              {edu.percentage && <span>{edu.cgpa ? ' | ' : ''}Percentage: {edu.percentage}%</span>}
-                              {edu.letterGrade && <span>{(edu.cgpa || edu.percentage) ? ' | ' : ''}Grade: {edu.letterGrade}</span>}
+                {/* Experience */}
+                {(hasData('experience') || isEditMode) && renderSection(
+                  'Professional Experience',
+                  'experience',
+                  renderSectionTemplate('experience', data.experience) || (
+                    data.experience.length > 0 ? (
+                      <EditableList
+                        items={data.experience}
+                        path={['experience']}
+                        createNewItem={() => ({
+                          id: Date.now().toString(),
+                          jobTitle: '',
+                          company: '',
+                          startDate: '',
+                          endDate: '',
+                          current: false,
+                          description: '',
+                          keyResponsibilities: ''
+                        })}
+                        addButtonText="Add Experience"
+                        renderItem={(exp, index) => (
+                          <div>
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1">
+                                <EditableElement
+                                  value={exp.jobTitle}
+                                  path={['experience', index.toString(), 'jobTitle']}
+                                  as="h3"
+                                  className="font-semibold text-lg"
+                                  placeholder="Job Title"
+                                />
+                                <EditableElement
+                                  value={exp.company}
+                                  path={['experience', index.toString(), 'company']}
+                                  className="font-medium"
+                                  style={{ color: colors.secondary }}
+                                  placeholder="Company Name"
+                                />
+                              </div>
+                              <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
+                                <Calendar className="h-3 w-3" />
+                                <EditableElement
+                                  value={exp.startDate}
+                                  path={['experience', index.toString(), 'startDate']}
+                                  placeholder="Start Date"
+                                />
+                                <span> - </span>
+                                {exp.current ? 'Present' : (
+                                  <EditableElement
+                                    value={exp.endDate}
+                                    path={['experience', index.toString(), 'endDate']}
+                                    placeholder="End Date"
+                                  />
+                                )}
+                              </div>
                             </div>
+                            <EditableElement
+                              value={exp.description}
+                              path={['experience', index.toString(), 'description']}
+                              multiline={true}
+                              className="text-sm leading-relaxed mb-2"
+                              placeholder="Describe your responsibilities and achievements..."
+                            />
+                            <EditableElement
+                              value={exp.keyResponsibilities}
+                              path={['experience', index.toString(), 'keyResponsibilities']}
+                              multiline={true}
+                              className="text-sm leading-relaxed"
+                              placeholder="Key roles and responsibilities..."
+                            />
+                          </div>
+                        )}
+                      />
+                    ) : (
+                      <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                        <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p className="text-sm">No work experience added yet</p>
+                        <p className="text-xs mt-1">Click "Add Experience" in the form or use the edit mode to add directly here</p>
+                      </div>
+                    )
+                  )
+                )}
+
+                {/* Education */}
+                {(hasData('education') || isEditMode) && renderSection(
+                  'Education',
+                  'education',
+                  renderSectionTemplate('education', data.education) || (
+                    data.education.length > 0 ? (
+                      <EditableList
+                        items={data.education}
+                        path={['education']}
+                        createNewItem={() => ({
+                          id: Date.now().toString(),
+                          degree: '',
+                          school: '',
+                          startYear: '',
+                          endYear: '',
+                          current: false,
+                          cgpa: '',
+                          percentage: '',
+                          letterGrade: '',
+                          description: ''
+                        })}
+                        addButtonText="Add Education"
+                        renderItem={(edu, index) => (
+                          <div>
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1">
+                                <EditableElement
+                                  value={edu.degree}
+                                  path={['education', index.toString(), 'degree']}
+                                  as="h3"
+                                  className="font-semibold text-lg"
+                                  placeholder="Degree/Program"
+                                />
+                                <EditableElement
+                                  value={edu.school}
+                                  path={['education', index.toString(), 'school']}
+                                  className="font-medium"
+                                  style={{ color: colors.secondary }}
+                                  placeholder="Institution Name"
+                                />
+                                {/* Academic Performance */}
+                                <div className="text-sm mt-1 space-x-2" style={{ color: colors.secondary }}>
+                                  {(edu.cgpa || isEditMode) && (
+                                    <EditableElement
+                                      value={edu.cgpa ? `CGPA: ${edu.cgpa}` : ''}
+                                      path={['education', index.toString(), 'cgpa']}
+                                      placeholder="CGPA: 0.0"
+                                    />
+                                  )}
+                                  {(edu.percentage || isEditMode) && (
+                                    <EditableElement
+                                      value={edu.percentage ? `${edu.percentage}%` : ''}
+                                      path={['education', index.toString(), 'percentage']}
+                                      placeholder="Percentage: 00%"
+                                    />
+                                  )}
+                                  {(edu.letterGrade || isEditMode) && (
+                                    <EditableElement
+                                      value={edu.letterGrade ? `Grade: ${edu.letterGrade}` : ''}
+                                      path={['education', index.toString(), 'letterGrade']}
+                                      placeholder="Grade: A+"
+                                    />
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
+                                <Calendar className="h-3 w-3" />
+                                <EditableElement
+                                  value={edu.startYear}
+                                  path={['education', index.toString(), 'startYear']}
+                                  placeholder="Start Year"
+                                />
+                                <span> - </span>
+                                {edu.current ? 'Present' : (
+                                  <EditableElement
+                                    value={edu.endYear}
+                                    path={['education', index.toString(), 'endYear']}
+                                    placeholder="End Year"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                            {(edu.description || isEditMode) && (
+                              <EditableElement
+                                value={edu.description || ''}
+                                path={['education', index.toString(), 'description']}
+                                multiline={true}
+                                className="text-sm leading-relaxed"
+                                placeholder="Describe coursework, achievements, or relevant details..."
+                              />
+                            )}
+                          </div>
+                        )}
+                      />
+                    ) : (
+                      <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                        <GraduationCap className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p className="text-sm">No education details added yet</p>
+                        <p className="text-xs mt-1">Click "Add Education" in the form or use the edit mode to add directly here</p>
+                      </div>
+                    )
+                  )
+                )}
+
+                {/* Skills */}
+                {(hasData('skills') || isEditMode) && renderSection(
+                  'Skills & Technologies',
+                  'skills',
+                  renderSectionTemplate('skills', data.skills) || (
+                    data.skills.length > 0 ? (
+                      <EditableList
+                        items={data.skills}
+                        path={['skills']}
+                        createNewItem={() => ({
+                          id: Date.now().toString(),
+                          name: '',
+                          category: 'Technical',
+                          level: 'Intermediate' as const
+                        })}
+                        addButtonText="Add Skill"
+                        renderItem={(skill, index) => (
+                          <div className="flex items-center gap-2 p-2 border rounded">
+                            <EditableElement
+                              value={skill.name}
+                              path={['skills', index.toString(), 'name']}
+                              placeholder="Skill name"
+                              className="flex-1 font-medium"
+                            />
+                            <EditableElement
+                              value={skill.category}
+                              path={['skills', index.toString(), 'category']}
+                              placeholder="Category"
+                              className="text-sm text-gray-600"
+                            />
+                            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                              {skill.level}
+                            </span>
+                          </div>
+                        )}
+                      />
+                    ) : (
+                      <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                        <Award className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p className="text-sm">No skills added yet</p>
+                        <p className="text-xs mt-1">Click "Add Skill" in the form or use the edit mode to add directly here</p>
+                      </div>
+                    )
+                  )
+                )}
+
+                {/* Certificates */}
+                {(hasData('certificates') || isEditMode) && renderSection(
+                  'Certifications',
+                  'certificates',
+                  data.certificates.length > 0 ? (
+                    <EditableList
+                      items={data.certificates}
+                      path={['certificates']}
+                      createNewItem={() => ({
+                        id: Date.now().toString(),
+                        name: '',
+                        issuer: '',
+                        issueDate: '',
+                        expiryDate: '',
+                        url: ''
+                      })}
+                      addButtonText="Add Certificate"
+                      renderItem={(cert, index) => (
+                        <div>
+                          <div className="flex justify-between items-start mb-1">
+                            <div className="flex-1">
+                              <EditableElement
+                                value={cert.name}
+                                path={['certificates', index.toString(), 'name']}
+                                as="h3"
+                                className="font-semibold"
+                                placeholder="Certificate Name"
+                              />
+                              <EditableElement
+                                value={cert.issuer}
+                                path={['certificates', index.toString(), 'issuer']}
+                                className="font-medium"
+                                style={{ color: colors.secondary }}
+                                placeholder="Issuing Organization"
+                              />
+                            </div>
+                            <div className="text-sm" style={{ color: colors.secondary }}>
+                              <EditableElement
+                                value={cert.issueDate}
+                                path={['certificates', index.toString(), 'issueDate']}
+                                placeholder="Issue Date"
+                              />
+                              {(cert.expiryDate || isEditMode) && (
+                                <>
+                                  <span> - </span>
+                                  <EditableElement
+                                    value={cert.expiryDate || ''}
+                                    path={['certificates', index.toString(), 'expiryDate']}
+                                    placeholder="Expiry Date"
+                                  />
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          {(cert.url || isEditMode) && (
+                            <EditableElement
+                              value={cert.url || ''}
+                              path={['certificates', index.toString(), 'url']}
+                              className="text-sm hover:underline"
+                              style={{ color: colors.accent }}
+                              placeholder="Certificate URL"
+                            />
                           )}
                         </div>
-                        <div className="text-sm" style={{ color: colors.secondary }}>
-                          {edu.startYear} - {edu.current ? 'Present' : edu.endYear}
-                        </div>
-                      </div>
-                      {edu.description && (
-                        <div className="text-sm leading-relaxed">
-                          {edu.description.split('\n').map((line, index) => (
-                            <div key={index} className="flex items-start gap-2">
-                              <span className="mt-1">{getBulletStyle('education')}</span>
-                              <span>{line}</span>
-                            </div>
-                          ))}
-                        </div>
                       )}
+                    />
+                  ) : (
+                    <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                      <Award className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">No certifications added yet</p>
+                      <p className="text-xs mt-1">Click "Add Certificate" in the form or use the edit mode to add directly here</p>
                     </div>
-                  ))}
-                </div>
-              )
-            )}
+                  )
+                )}
 
-            {/* Skills */}
-            {data.skills.length > 0 && renderSection(
-              'Skills & Technologies',
-              'skills',
-              renderSectionTemplate('skills', data.skills) || (
-                <div className="space-y-3">
-                  {Object.entries(
-                    data.skills.reduce((acc, skill) => {
-                      if (!acc[skill.category]) acc[skill.category] = [];
-                      acc[skill.category].push(skill);
-                      return acc;
-                    }, {} as Record<string, typeof data.skills>)
-                  ).map(([category, categorySkills]) => (
-                    <div key={category}>
-                      <h4 className="text-sm font-semibold mb-2" style={{ color: colors.secondary }}>
-                        {category}
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {categorySkills.map((skill, index) => (
-                          <span
-                            key={index}
-                            className="px-3 py-1 rounded-full text-sm font-medium"
-                            style={{
-                              backgroundColor: colors.accent + '20',
-                              color: colors.accent,
-                              border: `1px solid ${colors.accent}40`
-                            }}
-                          >
-                            <span className="font-medium">{skill.name}</span>
-                            <span className="text-xs opacity-75 ml-1">({skill.level})</span>
-                          </span>
-                        ))}
+                {/* Projects */}
+                {(hasData('projects') || isEditMode) && renderSection(
+                  'Projects & Internships',
+                  'projects',
+                  renderSectionTemplate('projects', data.projects) || (
+                    data.projects.length > 0 ? (
+                      <EditableList
+                        items={data.projects}
+                        path={['projects']}
+                        createNewItem={() => ({
+                          id: Date.now().toString(),
+                          name: '',
+                          description: '',
+                          technologies: '',
+                          url: '',
+                          startDate: '',
+                          endDate: '',
+                          current: false
+                        })}
+                        addButtonText="Add Project"
+                        renderItem={(project, index) => (
+                          <div>
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1">
+                                <EditableElement
+                                  value={project.name}
+                                  path={['projects', index.toString(), 'name']}
+                                  as="h3"
+                                  className="font-semibold text-lg"
+                                  placeholder="Project Name"
+                                />
+                                <EditableElement
+                                  value={project.technologies}
+                                  path={['projects', index.toString(), 'technologies']}
+                                  className="font-medium text-sm"
+                                  style={{ color: colors.secondary }}
+                                  placeholder="Technologies Used"
+                                />
+                              </div>
+                              <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
+                                <Calendar className="h-3 w-3" />
+                                <EditableElement
+                                  value={project.startDate}
+                                  path={['projects', index.toString(), 'startDate']}
+                                  placeholder="Start Date"
+                                />
+                                <span> - </span>
+                                {project.current ? 'Present' : (
+                                  <EditableElement
+                                    value={project.endDate}
+                                    path={['projects', index.toString(), 'endDate']}
+                                    placeholder="End Date"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                            <EditableElement
+                              value={project.description}
+                              path={['projects', index.toString(), 'description']}
+                              multiline={true}
+                              className="text-sm leading-relaxed mb-2"
+                              placeholder="Describe the project, your role, and key achievements..."
+                            />
+                            {(project.url || isEditMode) && (
+                              <EditableElement
+                                value={project.url || ''}
+                                path={['projects', index.toString(), 'url']}
+                                className="text-sm hover:underline"
+                                style={{ color: colors.accent }}
+                                placeholder="Project URL"
+                              />
+                            )}
+                          </div>
+                        )}
+                      />
+                    ) : (
+                      <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                        <Layout className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p className="text-sm">No projects added yet</p>
+                        <p className="text-xs mt-1">Click "Add Project" in the form or use the edit mode to add directly here</p>
+                      </div>
+                    )
+                  )
+                )}
+
+                {/* Additional Information */}
+                {(hasData('additionalInfo') || isEditMode) && renderSection(
+                  'Additional Information',
+                  'additionalInfo',
+                  data.additionalInfo ? (
+                    <EditableElement
+                      value={data.additionalInfo}
+                      path={['additionalInfo']}
+                      multiline={true}
+                      className="text-sm leading-relaxed"
+                      placeholder="Add any additional information, awards, languages, or other details..."
+                    />
+                  ) : (
+                    <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                      <User className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">No additional information added yet</p>
+                      <p className="text-xs mt-1">Click here to add awards, languages, or other details</p>
+                    </div>
+                  )
+                )}
+
+                {/* Hobbies */}
+                {(hasData('hobbies') || isEditMode) && renderSection(
+                  'Hobbies & Interests',
+                  'hobbies',
+                  renderSectionTemplate('hobbies', data.hobbies) || (
+                    data.hobbies.length > 0 ? (
+                      <EditableList
+                        items={data.hobbies}
+                        path={['hobbies']}
+                        createNewItem={() => ({
+                          id: Date.now().toString(),
+                          name: ''
+                        })}
+                        addButtonText="Add Hobby"
+                        renderItem={(hobby, index) => (
+                          <div className="flex items-center gap-2 p-2 border rounded">
+                            <EditableElement
+                              value={hobby.name}
+                              path={['hobbies', index.toString(), 'name']}
+                              placeholder="Hobby or interest"
+                              className="flex-1"
+                            />
+                          </div>
+                        )}
+                      />
+                    ) : (
+                      <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                        <User className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p className="text-sm">No hobbies or interests added yet</p>
+                        <p className="text-xs mt-1">Click "Add Hobby" in the form or use the edit mode to add directly here</p>
+                      </div>
+                    )
+                  )
+                )}
+
+                {/* Declaration */}
+                {data.declaration.enabled && renderSection(
+                  'Declaration',
+                  'declaration',
+                  renderSectionTemplate('declaration', data.declaration) || (
+                    <EditableElement
+                      value={data.declaration.text}
+                      path={['declaration', 'text']}
+                      multiline={true}
+                      className="text-sm leading-relaxed italic"
+                      placeholder="I hereby declare that the information provided above is true to the best of my knowledge."
+                    />
+                  )
+                )}
+
+                {/* Signature */}
+                {data.signature.enabled && renderSection(
+                  'Signature',
+                  'signature',
+                  renderSectionTemplate('signature', data.signature) || (
+                    <div className="space-y-4">
+                      {data.signature.digitalSignature && (
+                        <EditableImage
+                          value={data.signature.digitalSignature}
+                          path={['signature', 'digitalSignature']}
+                          width={150}
+                          height={60}
+                          shape="square"
+                        />
+                      )}
+                      <div className="flex gap-8 text-sm">
+                        <div>
+                          <EditableElement
+                            value={data.signature.name || data.personalInfo.fullName}
+                            path={['signature', 'name']}
+                            placeholder="Full Name"
+                            className="border-b border-gray-300 pb-1"
+                          />
+                          <p className="mt-1 text-xs" style={{ color: colors.secondary }}>Name</p>
+                        </div>
+                        <div>
+                          <EditableElement
+                            value={data.signature.date}
+                            path={['signature', 'date']}
+                            placeholder="Date"
+                            className="border-b border-gray-300 pb-1"
+                          />
+                          <p className="mt-1 text-xs" style={{ color: colors.secondary }}>Date</p>
+                        </div>
+                        <div>
+                          <EditableElement
+                            value={data.signature.location}
+                            path={['signature', 'location']}
+                            placeholder="Location"
+                            className="border-b border-gray-300 pb-1"
+                          />
+                          <p className="mt-1 text-xs" style={{ color: colors.secondary }}>Place</p>
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )
-            )}
-
-        {/* Certificates */}
-        {data.certificates.length > 0 && renderSection(
-          'Certifications',
-          'certificates',
-          <div className="space-y-4">
-            {data.certificates.map((cert) => (
-              <div key={cert.id}>
-                <div className="flex justify-between items-start mb-1">
-                  <div>
-                    <h3 className="font-semibold">{cert.name}</h3>
-                    <p className="font-medium" style={{ color: colors.secondary }}>{cert.issuer}</p>
-                  </div>
-                  <div className="text-sm" style={{ color: colors.secondary }}>
-                    {cert.issueDate && formatDate(cert.issueDate)}
-                    {cert.expiryDate && ` - ${formatDate(cert.expiryDate)}`}
-                  </div>
-                </div>
-                {cert.url && (
-                  <div className="text-sm">
-                    <a href={cert.url} className="hover:underline" style={{ color: colors.accent }}>
-                      View Certificate
-                    </a>
-                  </div>
+                  )
                 )}
               </div>
-            ))}
-          </div>
-        )}
-
-            {/* Projects */}
-            {data.projects.length > 0 && renderSection(
-              'Projects & Internships',
-              'projects',
-              renderSectionTemplate('projects', data.projects) || (
-                <div className="space-y-4">
-                  {data.projects.map((project) => (
-                    <div key={project.id}>
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-semibold text-lg">{project.name}</h3>
-                          <p className="font-medium text-sm" style={{ color: colors.secondary }}>{project.technologies}</p>
-                        </div>
-                        <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
-                          <Calendar className="h-3 w-3" />
-                          {formatDate(project.startDate)} - {project.current ? 'Present' : formatDate(project.endDate)}
-                        </div>
-                      </div>
-                      {project.description && (
-                        <div className="text-sm leading-relaxed mb-2">
-                          {project.description.split('\n').map((line, index) => (
-                            <div key={index} className="flex items-start gap-2">
-                              <span className="mt-1">{getBulletStyle('projects')}</span>
-                              <span>{line}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {project.url && (
-                        <div className="text-sm">
-                          <a href={project.url} className="hover:underline" style={{ color: colors.accent }}>
-                            View Project
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )
             )}
-
-        {/* Additional Information */}
-        {data.additionalInfo && renderSection(
-          'Additional Information',
-          'additionalInfo',
-          <div className="text-sm leading-relaxed">
-            {data.additionalInfo.split('\n').map((line, index) => (
-              <p key={index} className="mb-2">{line}</p>
-            ))}
-          </div>
-        )}
-
-            {/* Hobbies */}
-            {data.hobbies.length > 0 && renderSection(
-              'Hobbies & Interests',
-              'hobbies',
-              renderSectionTemplate('hobbies', data.hobbies) || (
-                <div className="flex flex-wrap gap-2">
-                  {data.hobbies.map((hobby, index) => (
-                    <span
-                      key={hobby.id}
-                      className="px-3 py-1 rounded-full text-sm"
-                      style={{
-                        backgroundColor: colors.secondary + '20',
-                        color: colors.secondary,
-                        border: `1px solid ${colors.secondary}40`
-                      }}
-                    >
-                      {hobby.name}
-                    </span>
-                  ))}
-                </div>
-              )
-            )}
-
-            {/* Declaration */}
-            {data.declaration.enabled && renderSection(
-              'Declaration',
-              'declaration',
-              renderSectionTemplate('declaration', data.declaration) || (
-                <div className="text-sm leading-relaxed">
-                  <p>{data.declaration.text}</p>
-                </div>
-              )
-            )}
-
-            {/* Signature */}
-            {data.signature.enabled && renderSection(
-              'Signature',
-              'signature',
-              renderSectionTemplate('signature', data.signature) || (
-                <div className="flex justify-between items-end">
-                  <div>
-                    {data.signature.digitalSignature && (
-                      <img
-                        src={data.signature.digitalSignature}
-                        alt="Digital Signature"
-                        className="h-16 object-contain mb-2"
-                      />
-                    )}
-                    <div className="text-sm">
-                      <p className="font-medium">{data.signature.name}</p>
-                      <p style={{ color: colors.secondary }}>{data.signature.date}</p>
-                    </div>
-                  </div>
-                  <div className="text-sm text-right" style={{ color: colors.secondary }}>
-                    <p>{data.signature.location}</p>
-                  </div>
-                </div>
-              )
-            )}
-            </div>
           </div>
         );
       }}
     </TemplateManager>
   );
 
-  const renderSidebarLayout = () => (
-    <div className="max-w-4xl mx-auto" style={{ backgroundColor: colors.background, color: colors.text }}>
-      <div className="grid grid-cols-3 gap-0 min-h-[800px]">
-        {/* Sidebar */}
-        <div className="p-6" style={{ backgroundColor: colors.primary + '10' }}>
-          {/* Profile */}
-          <div className="text-center mb-6">
-            {data.personalInfo.profileImage && (
-              <img
-                src={data.personalInfo.profileImage}
-                alt="Profile"
-                className="w-24 h-24 rounded-full mx-auto mb-4 object-cover"
-              />
-            )}
-            <h1 className="text-xl font-bold mb-2" style={{ color: colors.primary }}>
-              {data.personalInfo.fullName}
-            </h1>
-          </div>
-
-          {/* Contact Info */}
-          <div className="space-y-3 mb-6">
-            <h3 className="font-bold text-sm uppercase tracking-wide" style={{ color: colors.primary }}>
-              {getSectionIcon('contact')} Contact
-            </h3>
-            <div className="space-y-2 text-sm">
-              {data.personalInfo.email && (
-                <div className="flex items-center gap-2">
-                  <Mail className="w-3 h-3" />
-                  {data.personalInfo.email}
-                </div>
-              )}
-              {data.personalInfo.phone && (
-                <div className="flex items-center gap-2">
-                  <Phone className="w-3 h-3" />
-                  {data.personalInfo.phone}
-                </div>
-              )}
-              {data.personalInfo.location && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-3 h-3" />
-                  {data.personalInfo.location}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Public Links */}
-          {(data.publicLinks.github || data.publicLinks.linkedin || data.publicLinks.portfolio || data.publicLinks.website) && (
-            <div className="mb-6">
-              <h3 className="font-bold text-sm uppercase tracking-wide mb-3" style={{ color: colors.primary }}>
-                {getSectionIcon('links')} Links
-              </h3>
-               <div className="space-y-2 text-sm">
-                {data.publicLinks.github && (
-                  <a href={data.publicLinks.github} className="flex items-center gap-2 hover:underline" style={{ color: colors.accent }}>
-                    <Github className="w-3 h-3" />
-                    {data.publicLinks.github}
-                  </a>
-                )}
-                {data.publicLinks.linkedin && (
-                  <a href={data.publicLinks.linkedin} className="flex items-center gap-2 hover:underline" style={{ color: colors.accent }}>
-                    <Linkedin className="w-3 h-3" />
-                    {data.publicLinks.linkedin}
-                  </a>
-                )}
-                {data.publicLinks.portfolio && (
-                  <a href={data.publicLinks.portfolio} className="flex items-center gap-2 hover:underline" style={{ color: colors.accent }}>
-                    <Globe className="w-3 h-3" />
-                    {data.publicLinks.portfolio}
-                  </a>
-                )}
-                {data.publicLinks.website && (
-                  <a href={data.publicLinks.website} className="flex items-center gap-2 hover:underline" style={{ color: colors.accent }}>
-                    <Globe className="w-3 h-3" />
-                    {data.publicLinks.website}
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Skills */}
-          {data.skills.length > 0 && (
-            <div>
-              <h3 className="font-bold text-sm uppercase tracking-wide mb-3" style={{ color: colors.primary }}>
-                {getSectionIcon('skills')} Skills
-              </h3>
-              <div className="space-y-2">
-                {data.skills.map((skill, index) => (
-                  <div key={index} className="text-sm flex items-center gap-2">
-                    <span>{getBulletStyle('skills')}</span>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{skill.name}</span>
-                      <span className="text-xs opacity-75">{skill.level} • {skill.category}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Main Content */}
-        <div className="col-span-2 p-6">
-          <div className={getSpacingClass()}>
-            {/* Summary */}
-            {data.personalInfo.summary && (
-              <div>
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-2" style={{ color: colors.primary }}>
-                  {getSectionIcon('summary')} Summary
-                </h2>
-                <p className="leading-relaxed text-sm">{data.personalInfo.summary}</p>
-              </div>
-            )}
-
-            {/* Experience */}
-            {data.experience.length > 0 && (
-              <div>
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-2" style={{ color: colors.primary }}>
-                  {getSectionIcon('experience')} Experience
-                </h2>
-                <div className="space-y-4">
-                  {data.experience.map((exp) => (
-                    <div key={exp.id}>
-                      <div className="flex justify-between items-start mb-1">
-                        <div>
-                          <h3 className="font-semibold">{exp.jobTitle}</h3>
-                          <p className="font-medium" style={{ color: colors.secondary }}>{exp.company}</p>
-                        </div>
-                        <div className="text-sm flex items-center gap-1" style={{ color: colors.secondary }}>
-                          <Calendar className="h-3 w-3" />
-                          {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
-                        </div>
-                      </div>
-                      {exp.description && (
-                        <div className="text-sm leading-relaxed">
-                          {exp.description.split('\n').map((line, index) => (
-                            <div key={index} className="flex items-start gap-2">
-                              <span className="mt-1">{getBulletStyle('experience')}</span>
-                              <span>{line}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Education */}
-            {data.education.length > 0 && (
-              <div>
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-2" style={{ color: colors.primary }}>
-                  {getSectionIcon('education')} Education
-                </h2>
-                <div className="space-y-3">
-                  {data.education.map((edu) => (
-                    <div key={edu.id} className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-semibold">{edu.degree}</h3>
-                        <p style={{ color: colors.secondary }}>{edu.school}</p>
-                      </div>
-                      <div className="text-sm" style={{ color: colors.secondary }}>
-                        {edu.startYear} - {edu.current ? 'Present' : edu.endYear}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderLayout = () => {
-    switch (customization.layout) {
-      case 'sidebar':
-        return renderSidebarLayout();
-      case 'modern':
-      case 'creative':
-      case 'minimal':
-      case 'two-column':
-      case 'executive':
-      case 'academic':
-        return renderTraditionalLayout();
-      default:
-        return renderTraditionalLayout();
-    }
-  };
+  if (!onDataChange) {
+    return renderTraditionalLayout();
+  }
 
   return (
     <LiveEditingProvider
       data={data}
-      onDataChange={onDataChange || (() => {})}
+      onDataChange={onDataChange}
       isEditMode={isEditMode}
     >
-      <div className="w-full h-full min-h-[800px]" style={{ color: colors.text }}>
-        {renderLayout()}
-      </div>
+      {renderTraditionalLayout()}
     </LiveEditingProvider>
   );
 };
