@@ -1,24 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>theme-craft-resume</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder</title>
+    <meta name="description" content="Professional Resume Builder - Create beautiful resumes instantly">
+    
+    <!-- SEO Meta Tags -->
+    <meta property="og:title" content="Resume Builder - Create Professional Resumes">
+    <meta property="og:description" content="Build stunning, professional resumes with our easy-to-use resume builder">
+    <meta property="og:type" content="website">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-title">Resume Builder</h1>
+            <div class="nav-actions">
+                <button id="editModeToggle" class="btn btn-secondary">
+                    <span id="editModeText">Enable Live Edit</span>
+                </button>
+                <button id="downloadBtn" class="btn btn-primary">Download PDF</button>
+                <button id="downloadDocxBtn" class="btn btn-outline">Download DOCX</button>
+            </div>
+        </div>
+    </nav>
 
-    <meta property="og:title" content="theme-craft-resume" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="grid">
+                <!-- Form Section -->
+                <section class="form-section">
+                    <div class="form-container">
+                        <h2>Resume Information</h2>
+                        
+                        <!-- Personal Info -->
+                        <div class="form-group">
+                            <h3>Personal Information</h3>
+                            <input type="text" id="fullName" placeholder="Full Name" class="input">
+                            <input type="email" id="email" placeholder="Email Address" class="input">
+                            <input type="tel" id="phone" placeholder="Phone Number" class="input">
+                            <input type="text" id="location" placeholder="Location" class="input">
+                            <textarea id="summary" placeholder="Professional Summary" class="textarea"></textarea>
+                        </div>
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+                        <!-- Public Links -->
+                        <div class="form-group">
+                            <h3>Public Links</h3>
+                            <input type="url" id="github" placeholder="GitHub URL" class="input">
+                            <input type="url" id="linkedin" placeholder="LinkedIn URL" class="input">
+                            <input type="url" id="portfolio" placeholder="Portfolio URL" class="input">
+                            <input type="url" id="website" placeholder="Website URL" class="input">
+                        </div>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+                        <!-- Experience -->
+                        <div class="form-group">
+                            <div class="section-header">
+                                <h3>Experience</h3>
+                                <button id="addExperience" class="btn btn-sm btn-primary">Add Experience</button>
+                            </div>
+                            <div id="experienceList" class="list-container"></div>
+                        </div>
+
+                        <!-- Education -->
+                        <div class="form-group">
+                            <div class="section-header">
+                                <h3>Education</h3>
+                                <button id="addEducation" class="btn btn-sm btn-primary">Add Education</button>
+                            </div>
+                            <div id="educationList" class="list-container"></div>
+                        </div>
+
+                        <!-- Skills -->
+                        <div class="form-group">
+                            <div class="section-header">
+                                <h3>Skills</h3>
+                                <button id="addSkill" class="btn btn-sm btn-primary">Add Skill</button>
+                            </div>
+                            <div id="skillsList" class="list-container"></div>
+                        </div>
+
+                        <!-- Projects -->
+                        <div class="form-group">
+                            <div class="section-header">
+                                <h3>Projects</h3>
+                                <button id="addProject" class="btn btn-sm btn-primary">Add Project</button>
+                            </div>
+                            <div id="projectsList" class="list-container"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Customization Panel -->
+                <section class="customization-section">
+                    <div class="customization-container">
+                        <h2>Customization</h2>
+                        
+                        <!-- Themes -->
+                        <div class="form-group">
+                            <h3>Themes</h3>
+                            <div id="themeSelector" class="theme-grid"></div>
+                        </div>
+
+                        <!-- Colors -->
+                        <div class="form-group">
+                            <h3>Colors</h3>
+                            <div class="color-inputs">
+                                <div class="color-input-group">
+                                    <label for="primaryColor">Primary Color</label>
+                                    <input type="color" id="primaryColor" class="color-input" value="#2563eb">
+                                </div>
+                                <div class="color-input-group">
+                                    <label for="secondaryColor">Secondary Color</label>
+                                    <input type="color" id="secondaryColor" class="color-input" value="#64748b">
+                                </div>
+                                <div class="color-input-group">
+                                    <label for="accentColor">Accent Color</label>
+                                    <input type="color" id="accentColor" class="color-input" value="#3b82f6">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Layout -->
+                        <div class="form-group">
+                            <h3>Layout</h3>
+                            <select id="layoutSelector" class="select">
+                                <option value="traditional">Traditional</option>
+                                <option value="modern">Modern</option>
+                                <option value="minimal">Minimal</option>
+                                <option value="sidebar">Sidebar</option>
+                                <option value="two-column">Two Column</option>
+                            </select>
+                        </div>
+
+                        <!-- Typography -->
+                        <div class="form-group">
+                            <h3>Typography</h3>
+                            <select id="fontSelector" class="select">
+                                <option value="Inter">Inter</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Open Sans">Open Sans</option>
+                                <option value="Source Sans Pro">Source Sans Pro</option>
+                                <option value="Playfair Display">Playfair Display</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Preview Section -->
+                <section class="preview-section">
+                    <div class="preview-container">
+                        <div id="resumePreview" class="resume-preview">
+                            <div class="resume-content">
+                                <div class="empty-state" id="emptyState">
+                                    <div class="empty-icon">📄</div>
+                                    <h3>Your Resume Preview</h3>
+                                    <p>Start filling in your information to see your resume come to life!</p>
+                                </div>
+                                
+                                <div class="resume-document" id="resumeDocument" style="display: none;">
+                                    <!-- Resume content will be generated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
 </html>

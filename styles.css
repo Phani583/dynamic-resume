@@ -1,0 +1,670 @@
+/* Resume Builder CSS */
+
+/* CSS Variables for Design System */
+:root {
+    /* Core Colors */
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    
+    /* Primary Brand */
+    --primary: #2563eb;
+    --primary-foreground: #ffffff;
+    --primary-hover: #1d4ed8;
+    
+    /* Secondary */
+    --secondary: #f1f5f9;
+    --secondary-foreground: #334155;
+    
+    /* Muted */
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+    
+    /* Accent */
+    --accent: #f1f5f9;
+    --accent-foreground: #0f172a;
+    
+    /* Border and Input */
+    --border: #e2e8f0;
+    --input: #e2e8f0;
+    --ring: #2563eb;
+    
+    /* Status Colors */
+    --success: #059669;
+    --warning: #d97706;
+    --destructive: #dc2626;
+    
+    /* Layout */
+    --radius: 0.75rem;
+    --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-medium: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    
+    /* Animations */
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+    line-height: 1.6;
+}
+
+/* Navigation */
+.navbar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-soft);
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.nav-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    background: transparent;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+.btn-secondary {
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+    border-color: var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--muted);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--foreground);
+    border-color: var(--border);
+}
+
+.btn-outline:hover {
+    background: var(--accent);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.btn-danger {
+    background: var(--destructive);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+/* Layout */
+.main-content {
+    min-height: calc(100vh - 80px);
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 2rem;
+    height: calc(100vh - 120px);
+}
+
+/* Form Section */
+.form-section,
+.customization-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    overflow-y: auto;
+    box-shadow: var(--shadow-soft);
+}
+
+.form-container h2,
+.customization-container h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--foreground);
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-group h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--foreground);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* Form Inputs */
+.input,
+.textarea,
+.select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--input);
+    border-radius: calc(var(--radius) - 2px);
+    background: var(--card);
+    color: var(--foreground);
+    font-size: 0.875rem;
+    transition: var(--transition);
+    margin-bottom: 0.75rem;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px hsl(from var(--ring) h s l / 0.2);
+}
+
+.textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* List Items */
+.list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.list-item {
+    background: var(--muted);
+    border-radius: calc(var(--radius) - 2px);
+    padding: 1rem;
+    border: 1px solid var(--border);
+}
+
+.list-item-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.list-item-title {
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+.list-item .input,
+.list-item .textarea {
+    margin-bottom: 0.5rem;
+}
+
+/* Color Inputs */
+.color-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.color-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.color-input-group label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+}
+
+.color-input {
+    width: 100%;
+    height: 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    background: none;
+    cursor: pointer;
+}
+
+/* Theme Grid */
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+}
+
+.theme-card {
+    padding: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    cursor: pointer;
+    transition: var(--transition);
+    background: var(--card);
+    text-align: center;
+}
+
+.theme-card:hover {
+    border-color: var(--primary);
+}
+
+.theme-card.active {
+    border-color: var(--primary);
+    background: hsl(from var(--primary) h s l / 0.1);
+}
+
+.theme-preview {
+    width: 100%;
+    height: 60px;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-name {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+/* Preview Section */
+.preview-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+}
+
+.preview-container {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.resume-preview {
+    padding: 2rem;
+    background: #ffffff;
+    min-height: 100%;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    text-align: center;
+    color: var(--muted-foreground);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--foreground);
+}
+
+.empty-state p {
+    font-size: 0.875rem;
+    max-width: 300px;
+}
+
+/* Resume Document */
+.resume-document {
+    max-width: 8.5in;
+    margin: 0 auto;
+    background: white;
+    padding: 1in;
+    box-shadow: var(--shadow-medium);
+    border-radius: var(--radius);
+    font-family: var(--resume-font, 'Inter'), sans-serif;
+}
+
+/* Resume Styles */
+.resume-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--resume-primary, var(--primary));
+}
+
+.resume-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--resume-primary, var(--primary));
+    margin-bottom: 0.5rem;
+}
+
+.resume-contact {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.875rem;
+    color: var(--resume-secondary, var(--muted-foreground));
+}
+
+.resume-section {
+    margin-bottom: 2rem;
+}
+
+.resume-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--resume-primary, var(--primary));
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--resume-accent, var(--border));
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.resume-item {
+    margin-bottom: 1.5rem;
+}
+
+.resume-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.resume-item-title {
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.resume-item-subtitle {
+    color: var(--resume-secondary, var(--muted-foreground));
+    font-style: italic;
+}
+
+.resume-item-date {
+    color: var(--resume-secondary, var(--muted-foreground));
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.resume-item-description {
+    color: var(--foreground);
+    line-height: 1.6;
+    margin-top: 0.5rem;
+}
+
+.resume-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.skill-tag {
+    background: hsl(from var(--resume-primary, var(--primary)) h s l / 0.1);
+    color: var(--resume-primary, var(--primary));
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.resume-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.resume-link {
+    color: var(--resume-primary, var(--primary));
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.resume-link:hover {
+    text-decoration: underline;
+}
+
+/* Sidebar Layout */
+.resume-document.sidebar-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+.resume-sidebar {
+    background: hsl(from var(--resume-primary, var(--primary)) h s l / 0.05);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+}
+
+/* Two Column Layout */
+.resume-document.two-column-layout .resume-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+/* Toast Styles */
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.toast {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    box-shadow: var(--shadow-medium);
+    max-width: 300px;
+    animation: slideIn 0.3s ease;
+}
+
+.toast.success {
+    border-left: 4px solid var(--success);
+}
+
+.toast.error {
+    border-left: 4px solid var(--destructive);
+}
+
+.toast-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.toast-description {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        height: auto;
+    }
+    
+    .form-section,
+    .customization-section {
+        max-height: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .nav-container {
+        padding: 0 1rem;
+    }
+    
+    .nav-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .resume-contact {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .resume-item-header {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .color-inputs {
+        grid-template-columns: 1fr;
+    }
+    
+    .theme-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .navbar,
+    .form-section,
+    .customization-section {
+        display: none;
+    }
+    
+    .main-content {
+        height: auto;
+    }
+    
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .preview-section {
+        box-shadow: none;
+        border: none;
+        height: auto;
+    }
+    
+    .resume-preview {
+        padding: 0;
+    }
+    
+    .resume-document {
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        max-width: none;
+    }
+}
+
+/* Edit Mode Styles */
+.edit-mode .editable {
+    border: 1px dashed var(--primary);
+    border-radius: 4px;
+    padding: 2px;
+    transition: var(--transition);
+}
+
+.edit-mode .editable:hover {
+    background: hsl(from var(--primary) h s l / 0.05);
+}
+
+.edit-mode .editable:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
